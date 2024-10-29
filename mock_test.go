@@ -1,6 +1,8 @@
 package httphandler_test
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // mockResponder is a mock implementation of the Responder interface.
 type mockResponder struct {
