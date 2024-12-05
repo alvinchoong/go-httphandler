@@ -6,9 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"httphandler/jsonresp"
-
-	"httphandler"
+	"github.com/alvinchoong/go-httphandler"
+	"github.com/alvinchoong/go-httphandler/jsonresp"
 )
 
 func TestSuccess_Respond(t *testing.T) {

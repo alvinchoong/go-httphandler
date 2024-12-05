@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"httphandler"
+	"github.com/alvinchoong/go-httphandler"
 )
 
 func TestHandle(t *testing.T) {

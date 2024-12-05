@@ -8,9 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"httphandler/jsonresp"
-
-	"httphandler"
+	"github.com/alvinchoong/go-httphandler"
+	"github.com/alvinchoong/go-httphandler/jsonresp"
 )
 
 func TestError_Respond(t *testing.T) {

@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"time"
 
-	"httphandler"
-	"httphandler/downloadresp"
-	"httphandler/jsonresp"
-	"httphandler/plainresp"
+	"github.com/alvinchoong/go-httphandler"
+	"github.com/alvinchoong/go-httphandler/downloadresp"
+	"github.com/alvinchoong/go-httphandler/jsonresp"
+	"github.com/alvinchoong/go-httphandler/plainresp"
 )
 
 type User struct {

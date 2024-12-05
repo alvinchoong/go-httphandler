@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"httphandler"
+	"github.com/alvinchoong/go-httphandler"
 )
 
 func TestRedirect_Respond(t *testing.T) {

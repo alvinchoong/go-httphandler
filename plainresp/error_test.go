@@ -6,9 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"httphandler/plainresp"
-
-	"httphandler"
+	"github.com/alvinchoong/go-httphandler"
+	"github.com/alvinchoong/go-httphandler/plainresp"
 )
 
 func TestError_Respond(t *testing.T) {

@@ -3,7 +3,7 @@ package plainresp
 import (
 	"net/http"
 
-	"httphandler"
+	"github.com/alvinchoong/go-httphandler"
 )
 
 // Ensure successResponder implements Responder.

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"httphandler"
+	"github.com/alvinchoong/go-httphandler"
 )
 
 // Ensure responder implements Responder.

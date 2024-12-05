@@ -7,9 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"httphandler/downloadresp"
-
-	"httphandler"
+	"github.com/alvinchoong/go-httphandler"
+	"github.com/alvinchoong/go-httphandler/downloadresp"
 )
 
 func TestInline_Respond(t *testing.T) {
