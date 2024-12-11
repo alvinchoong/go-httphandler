@@ -3,29 +3,28 @@
 [![Go Report Card](https://goreportcard.com/badge/gojp/goreportcard)](https://goreportcard.com/report/gojp/goreportcard)
 [![License](https://img.shields.io/github/license/alvinchoong/go-httphandler)](LICENSE)
 
-A zero-dependency HTTP handler wrapper for Go that enables safer, more idiomatic HTTP handlers by returning values instead of writing directly to `http.ResponseWriter`.
+A zero-dependency HTTP response handler for Go that makes writing HTTP handlers more idiomatic and less error-prone.
 
-## Introduction
+## Features
 
-`go-httphandler` simplifies HTTP handler creation by letting you return values instead of writing directly to `http.ResponseWriter`. This design helps prevent common mistakes, such as inadvertently allowing code to continue executing after sending a response.
-
-## Key Features
-
-- 🚀 **Zero Dependencies:** Built purely on Go's standard library.
-- 🔄 **Automatic JSON Unmarshalling:** Simplify input handling with automatic JSON parsing into structured types.
-- 🛠 **Standardized Error Handling:** Consistent error responses across all handlers.
-- 📄 **Multiple Response Types:** Support for JSON, plain text, file downloads, and redirects out-of-the-box.
+- ⚡ **Zero Dependencies**: Built entirely on Go's standard library
+- 📄 **Built-in Response Types**: Support for JSON, plain text, file downloads, and redirects
+- 🛠️ **Fluent API**: Chain methods to customize responses with headers, cookies, and status codes
+- 🔄 **Flexible Request Parsing**: Built-in JSON parsing with support for custom decoders
+- 🧩 **Easily Extendable**: Create custom response types and request decoders
+- 📝 **Integrated Logging**: Optional logging support for all response types
 
 ## Why go-httphandler?
 
 Traditional Go HTTP handlers interact directly with `http.ResponseWriter`, which can lead to several common pitfalls:
 
 ```go
+// Traditional approach - common pitfalls
+
 // Pitfall 1: Headers must be set before writing the response
-http.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) {
-    id := r.PathValue("id")
-    user, exists := users[id]
-    if !exists {
+router.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) {
+    user := getUser(r.PathValue("id"))
+    if user == nil {
         json.NewEncoder(w).Encode(map[string]string{
             "error": "User not found",
         })
@@ -36,10 +35,9 @@ http.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) 
 })
 
 // Pitfall 2: Missing returns cause code to continue executing
-http.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) {
-    id := r.PathValue("id")
-    user, exists := users[id]
-    if !exists {
+router.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) {
+    user := getUser(r.PathValue("id"))
+    if user == nil {
         w.WriteHeader(http.StatusNotFound)
         json.NewEncoder(w).Encode(map[string]string{
             "error": "User not found",
@@ -47,54 +45,172 @@ http.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) 
         // Missing return! Code continues executing...
     }
     
-    // This will still execute if user doesn't exist
+    // This will still execute!
     json.NewEncoder(w).Encode(user)
 })
 
 // go-httphandler approach - prevents both issues by design
 router.HandleFunc("GET /users/{id}", httphandler.Handle(func(r *http.Request) httphandler.Responder {
-    id := r.PathValue("id")
-    user, exists := users[id]
-    if !exists {
+    user := getUser(r.PathValue("id"))
+    if user == nil {
         return jsonresp.Error(nil, "User not found", http.StatusNotFound)
     }
-    return jsonresp.Success(&user)
+    return jsonresp.Success(user)
 }))
 ```
 
 ## Installation
 
-```sh
+```bash
 go get github.com/alvinchoong/go-httphandler
 ```
 
-## Basic Usage
+## Usage Examples
+
+### Basic JSON Handler
 
 ```go
-// Basic handler
-router.HandleFunc("GET /users/{id}", httphandler.Handle(func(r *http.Request) httphandler.Responder {
+func getUserHandler(r *http.Request) httphandler.Responder {
     user := getUser(r.PathValue("id"))
-    return jsonresp.Success(&user)
-}))
+    if user == nil {
+        return jsonresp.Error(nil, "User not found", http.StatusNotFound)
+    }
+    return jsonresp.Success(user)
+}
 
-// Handler with input parsing
-router.HandleFunc("POST /users", httphandler.HandleWithInput(func(r *http.Request, input UserInput) httphandler.Responder {
-    user := createUser(input)
-    return jsonresp.Success(&user).WithStatus(http.StatusCreated)
-}))
-
-// Error handling
-return jsonresp.Error(err, "User not found", http.StatusBadRequest)
-
-return jsonresp.InternalServerError(err)
-
-// File download
-return downloadresp.Attachment(fileReader, "report.pdf").
-    WithContentType("application/pdf").
-    WithLogger(logger)
-
-// Redirect
-return httphandler.Redirect("/new-path", http.StatusTemporaryRedirect)
+router.HandleFunc("GET /users/{id}", httphandler.Handle(getUserHandler))
 ```
 
-For complete examples including a full REST API implementation, see [examples/main.go](examples/main.go)
+### Handler with Request Body Parsing
+
+```go
+func createUserHandler(r *http.Request, input CreateUserInput) httphandler.Responder {
+    user, err := createUser(input)
+    if err != nil {
+        return jsonresp.Error(err, "Failed to create user", http.StatusBadRequest)
+    }
+    return jsonresp.Success(user)
+}
+
+router.HandleFunc("POST /users", httphandler.HandleWithInput(createUserHandler))
+```
+
+### File Download
+
+```go
+func downloadReportHandler(r *http.Request) httphandler.Responder {
+    file, err := getReport()
+    if err != nil {
+        return jsonresp.Error(err, "Report not found", http.StatusNotFound)
+    }
+    
+    return downloadresp.Attachment(file, "report.pdf").
+        WithContentType("application/pdf").
+        WithLogger(logger)
+}
+```
+
+### Redirect Response
+
+```go
+func redirectHandler(r *http.Request) httphandler.Responder {
+    return httphandler.Redirect("/new-location", http.StatusTemporaryRedirect).
+        WithCookie(&http.Cookie{Name: "session", Value: "123"})
+}
+```
+
+### Plain Text Response
+
+```go
+func healthCheckHandler(r *http.Request) httphandler.Responder {
+    return plainresp.Success("OK").
+        WithHeader("Cache-Control", "no-cache")
+}
+```
+
+## Response Customization
+
+All responders support method chaining for customization:
+
+```go
+return jsonresp.Success(data).
+    WithStatus(http.StatusAccepted).
+    WithHeader("X-Custom-Header", "value").
+    WithCookie(&http.Cookie{Name: "session", Value: "123"}).
+    WithLogger(logger)
+```
+
+## Error Handling
+
+The library provides consistent error handling across all response types:
+
+```go
+// Standard error response
+return jsonresp.Error(err, "Invalid input", http.StatusBadRequest)
+
+// Internal server error with logging
+return jsonresp.InternalServerError(err).WithLogger(logger)
+
+// Plain text error
+return plainresp.Error(err, "Not Found", http.StatusNotFound)
+```
+
+## Creating Custom Response Types
+
+You can easily create your own response types by implementing the `Responder` interface.
+
+### Custom CSV Responder
+
+```go
+// Define your custom responder
+type CSVResponder struct {
+    records    [][]string
+    filename   string
+    statusCode int
+}
+
+// Create a constructor
+func NewCSVResponse(records [][]string, filename string) *CSVResponder {
+    return &CSVResponder{
+        records:    records,
+        filename:   filename,
+        statusCode: http.StatusOK,
+    }
+}
+
+// Implement the Responder interface
+func (res *CSVResponder) Respond(w http.ResponseWriter, r *http.Request) {
+    // Set headers for CSV download
+    w.Header().Set("Content-Type", "text/csv")
+    w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, res.filename))
+    
+    // Write status code
+    w.WriteHeader(res.statusCode)
+    
+    // Write CSV
+    writer := csv.NewWriter(w)
+    if err := writer.WriteAll(res.records); err != nil {
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        return
+    }
+}
+
+// Usage example
+func csvReportHandler(r *http.Request) httphandler.Responder {
+    records := [][]string{
+        {"Name", "Email", "Age"},
+        {"John Doe", "john@example.com", "30"},
+        {"Jane Doe", "jane@example.com", "28"},
+    }
+    return NewCSVResponse(records, "users.csv").
+        WithHeader("Cache-Control", "no-cache")
+}
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
