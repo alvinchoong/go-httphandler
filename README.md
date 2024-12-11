@@ -128,6 +128,10 @@ func healthCheckHandler(r *http.Request) httphandler.Responder {
 }
 ```
 
+### Additional Examples
+
+For more examples including a full REST API implementation see [examples/main.go](examples/main.go)
+
 ## Response Customization
 
 All responders support method chaining for customization:
