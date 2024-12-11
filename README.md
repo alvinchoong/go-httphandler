@@ -207,6 +207,25 @@ func csvReportHandler(r *http.Request) httphandler.Responder {
 }
 ```
 
+## Benchmarks
+
+Performance comparison between standard Go HTTP handlers and go-httphandler (benchmarked on Apple M3 Pro):
+
+```plain
+BenchmarkJSONResponse/Go/StandardHTTPHandler                1164493    1017 ns/op    6118 B/op    18 allocs/op
+BenchmarkJSONResponse/HTTPHandler/JSONResponse             1000000    1091 ns/op    6294 B/op    21 allocs/op
+BenchmarkJSONRequestResponse/Go/StandardHTTPHandlerWithInput       978330    1201 ns/op    6275 B/op    22 allocs/op
+BenchmarkJSONRequestResponse/HTTPHandler/JSONRequestResponse       901645    1270 ns/op    6379 B/op    26 allocs/op
+```
+
+Results show that `go-httphandler` adds a minimal overhead (less than 75 nanoseconds) while providing significant safety and maintainability benefits. This overhead is negligible in real-world applications where network latency (typically milliseconds) and business logic are the primary performance factors.
+
+You can run the benchmarks yourself:
+
+```bash
+go test -bench=. -benchmem
+```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
