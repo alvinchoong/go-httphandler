@@ -205,18 +205,18 @@ func csvReportHandler(r *http.Request) httphandler.Responder {
 
 ## Benchmarks
 
-Performance comparison between standard Go HTTP handlers and go-httphandler (benchmarked on Apple M3 Pro):
+Performance comparison between standard Go HTTP handlers and `go-httphandler` (benchmarked on Apple M3 Pro):
 
 ```plain
-BenchmarkJSONResponse/Go/StandardHTTPHandler                1164493    1017 ns/op    6118 B/op    18 allocs/op
-BenchmarkJSONResponse/HTTPHandler/JSONResponse             1000000    1091 ns/op    6294 B/op    21 allocs/op
-BenchmarkJSONRequestResponse/Go/StandardHTTPHandlerWithInput       978330    1201 ns/op    6275 B/op    22 allocs/op
-BenchmarkJSONRequestResponse/HTTPHandler/JSONRequestResponse       901645    1270 ns/op    6379 B/op    26 allocs/op
+BenchmarkJSONResponse/Go/StandardHTTPHandler                      1145364      1051 ns/op      6118 B/op      18 allocs/op
+BenchmarkJSONResponse/HTTPHandler/JSONResponse                    1000000      1121 ns/op      6295 B/op      21 allocs/op
+BenchmarkJSONRequestResponse/Go/StandardHTTPHandlerWithInput      1000000      1291 ns/op      6275 B/op      22 allocs/op
+BenchmarkJSONRequestResponse/HTTPHandler/JSONRequestResponse       961740      1257 ns/op      6379 B/op      26 allocs/op
 ```
 
-Results show that `go-httphandler` adds a minimal overhead (less than 75 nanoseconds) while providing significant safety and maintainability benefits. This overhead is negligible in real-world applications where network latency (typically milliseconds) and business logic are the primary performance factors.
+Results show that `go-httphandler` adds a minimal and neglible overhead (~70 nanoseconds) while providing significant safety and maintainability benefits.
 
-You can run the benchmarks yourself:
+You can validate these results on your system by running:
 
 ```bash
 go test -bench=. -benchmem
