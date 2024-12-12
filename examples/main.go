@@ -33,6 +33,9 @@ var users = make(map[string]User)
 func main() {
 	router := http.NewServeMux()
 
+	// Plain text response example
+	router.HandleFunc("GET /ping", httphandler.Handle(ping))
+
 	// Create User
 	router.HandleFunc("POST /users", httphandler.HandleWithInput(createUser))
 
@@ -53,9 +56,6 @@ func main() {
 
 	// Redirect example
 	router.HandleFunc("GET /redirect", httphandler.Handle(redirectExample))
-
-	// Plain text response example
-	router.HandleFunc("GET /hello", httphandler.Handle(helloWorld))
 
 	// Start server
 	slog.Info("Server starting on :8080")
@@ -158,8 +158,8 @@ func redirectExample(r *http.Request) httphandler.Responder {
 	return httphandler.Redirect("https://google.com", http.StatusSeeOther)
 }
 
-func helloWorld(r *http.Request) httphandler.Responder {
-	return plainresp.Success("Hello, World!")
+func ping(r *http.Request) httphandler.Responder {
+	return plainresp.Success("pong")
 }
 
 func validate(input UserInput) error {
