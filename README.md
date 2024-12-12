@@ -1,9 +1,10 @@
 # go-httphandler
 
+[![GoDoc](https://pkg.go.dev/badge/github.com/alvinchoong/go-httphandler)](https://pkg.go.dev/github.com/alvinchoong/go-httphandler)
 [![Go Report Card](https://goreportcard.com/badge/gojp/goreportcard)](https://goreportcard.com/report/gojp/goreportcard)
 [![License](https://img.shields.io/github/license/alvinchoong/go-httphandler)](LICENSE)
 
-A zero-dependency HTTP response handler for Go that makes writing HTTP handlers more idiomatic and less error-prone.
+A zero-dependency HTTP response handler for Go that makes writing HTTP handlers idiomatic and less error-prone.
 
 ## Features
 
@@ -67,11 +68,16 @@ go get github.com/alvinchoong/go-httphandler
 
 ## Usage Examples
 
-### Basic JSON Handler
+### Response Types
+
+#### JSON Response
 
 ```go
 func getUserHandler(r *http.Request) httphandler.Responder {
-    user := getUser(r.PathValue("id"))
+    user, err := getUser(r.PathValue("id"))
+    if err != nil {
+        return jsonresp.InternalServerError(err)
+    }
     if user == nil {
         return jsonresp.Error(nil, "User not found", http.StatusNotFound)
     }
@@ -81,36 +87,17 @@ func getUserHandler(r *http.Request) httphandler.Responder {
 router.HandleFunc("GET /users/{id}", httphandler.Handle(getUserHandler))
 ```
 
-### Handler with Request Body Parsing
-
-```go
-func createUserHandler(r *http.Request, input CreateUserInput) httphandler.Responder {
-    user, err := createUser(input)
-    if err != nil {
-        return jsonresp.Error(err, "Failed to create user", http.StatusBadRequest)
-    }
-    return jsonresp.Success(user)
-}
-
-router.HandleFunc("POST /users", httphandler.HandleWithInput(createUserHandler))
-```
-
-### File Download
+#### File Response
 
 ```go
 func downloadReportHandler(r *http.Request) httphandler.Responder {
-    file, err := getReport()
-    if err != nil {
-        return jsonresp.Error(err, "Report not found", http.StatusNotFound)
-    }
-    
+    file := getReport()
     return downloadresp.Attachment(file, "report.pdf").
-        WithContentType("application/pdf").
-        WithLogger(logger)
+        WithContentType("application/pdf")
 }
 ```
 
-### Redirect Response
+#### Redirect Response
 
 ```go
 func redirectHandler(r *http.Request) httphandler.Responder {
@@ -119,7 +106,7 @@ func redirectHandler(r *http.Request) httphandler.Responder {
 }
 ```
 
-### Plain Text Response
+#### Plain Text Response
 
 ```go
 func healthCheckHandler(r *http.Request) httphandler.Responder {
@@ -128,11 +115,7 @@ func healthCheckHandler(r *http.Request) httphandler.Responder {
 }
 ```
 
-### Additional Examples
-
-For more examples including a full REST API implementation see [examples/main.go](examples/main.go)
-
-## Response Customization
+#### Response Customization
 
 All responders support method chaining for customization:
 
@@ -144,20 +127,30 @@ return jsonresp.Success(data).
     WithLogger(logger)
 ```
 
-## Error Handling
+### Request Handling
 
-The library provides consistent error handling across all response types:
+#### JSON Request Parsing
 
 ```go
-// Standard error response
-return jsonresp.Error(err, "Invalid input", http.StatusBadRequest)
+func createUserHandler(r *http.Request, input CreateUserInput) httphandler.Responder {
+    if err := input.Validate(); err != nil {
+        return jsonresp.Error(err, "Invalid input", http.StatusBadRequest)
+    }
+    
+    user, err := createUser(input)
+    if err != nil {
+        return jsonresp.InternalServerError(err)
+    }
 
-// Internal server error with logging
-return jsonresp.InternalServerError(err).WithLogger(logger)
+    return jsonresp.Success(user)
+}
 
-// Plain text error
-return plainresp.Error(err, "Not Found", http.StatusNotFound)
+router.HandleFunc("POST /users", httphandler.HandleWithInput(createUserHandler))
 ```
+
+### Additional Examples
+
+For more examples including a full REST API implementation see [examples/main.go](examples/main.go)
 
 ## Creating Custom Response Types
 
@@ -206,8 +199,7 @@ func csvReportHandler(r *http.Request) httphandler.Responder {
         {"John Doe", "john@example.com", "30"},
         {"Jane Doe", "jane@example.com", "28"},
     }
-    return NewCSVResponse(records, "users.csv").
-        WithHeader("Cache-Control", "no-cache")
+    return NewCSVResponse(records, "users.csv")
 }
 ```
 
