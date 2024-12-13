@@ -24,16 +24,16 @@ type redirectResponder struct {
 
 // Respond sents an HTTP redirect with custom headers, cookies, and status code.
 func (res *redirectResponder) Respond(w http.ResponseWriter, r *http.Request) {
+	// Set cookies.
+	for _, cookie := range res.cookies {
+		http.SetCookie(w, cookie)
+	}
+
 	// Add custom headers.
 	for key, values := range res.header {
 		for _, value := range values {
 			w.Header().Add(key, value)
 		}
-	}
-
-	// Set cookies.
-	for _, cookie := range res.cookies {
-		http.SetCookie(w, cookie)
 	}
 
 	// Redirect to the specified URL.

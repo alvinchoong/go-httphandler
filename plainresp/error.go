@@ -41,16 +41,16 @@ func InternalServerError(err error) *errorResponder {
 
 // Respond sends the response with custom headers, cookies and status code.
 func (res *errorResponder) Respond(w http.ResponseWriter, _ *http.Request) {
+	// Set cookies.
+	for _, cookie := range res.cookies {
+		http.SetCookie(w, cookie)
+	}
+
 	// Add custom headers.
 	for key, values := range res.header {
 		for _, value := range values {
 			w.Header().Add(key, value)
 		}
-	}
-
-	// Set cookies.
-	for _, cookie := range res.cookies {
-		http.SetCookie(w, cookie)
 	}
 
 	// Set response body and status code.
