@@ -43,14 +43,8 @@ func (res *successResponder[T]) Respond(w http.ResponseWriter, _ *http.Request) 
 	}
 
 	// Write the JSON response.
-	if b := writeJSON(w, res.data, res.statusCode, res.logger); b != nil {
-		if res.logger != nil {
-			res.logger.Info("Sent HTTP response",
-				"status_code", res.statusCode,
-				"response_body", string(b),
-			)
-		}
-	}
+	b := writeJSON(w, res.data, res.statusCode, res.logger)
+	httphandler.LogResponse(res.logger, res.statusCode, "response_body", b)
 }
 
 // WithLogger sets the logger for the responder.
@@ -87,25 +81,13 @@ func writeJSON(w http.ResponseWriter, v any, status int, logger httphandler.Logg
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(v); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error":"Internal Server Error"}`))
-		if logger != nil {
-			logger.Error("Failed to encode JSON response",
-				"error", err,
-				"data", v,
-			)
-		}
+		httphandler.WriteInternalServerError(w, logger, err, "data", v)
 		return nil
 	}
 
 	w.WriteHeader(status)
 	if _, err := w.Write(buf.Bytes()); err != nil {
-		if logger != nil {
-			logger.Error("Failed to write HTTP response",
-				"error", err,
-				"response_body", buf.String(),
-			)
-		}
+		httphandler.WriteInternalServerError(w, logger, err, "response_body", buf.String())
 		return nil
 	}
 

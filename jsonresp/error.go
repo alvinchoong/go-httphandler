@@ -54,15 +54,8 @@ func (res *errorResponder) Respond(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	// Write the error JSON response.
-	if b := writeJSON(w, map[string]string{"error": res.errMessage}, res.statusCode, res.logger); b != nil {
-		if res.logger != nil {
-			res.logger.Error("Sent error HTTP response", "error", res.err)
-			res.logger.Info("Sent HTTP response",
-				"status_code", res.statusCode,
-				"response_body", string(b),
-			)
-		}
-	}
+	writeJSON(w, map[string]string{"error": res.errMessage}, res.statusCode, res.logger)
+	httphandler.LogRequestError(res.logger, res.err)
 }
 
 // WithLogger sets the logger for the responder.

@@ -55,13 +55,7 @@ func (res *errorResponder) Respond(w http.ResponseWriter, _ *http.Request) {
 
 	// Set response body and status code.
 	http.Error(w, res.errMessage, res.statusCode)
-	if res.logger != nil {
-		res.logger.Error("Error handling request", "error", res.err)
-		res.logger.Info("Sent HTTP response",
-			"status_code", res.statusCode,
-			"response_body", res.errMessage,
-		)
-	}
+	httphandler.LogRequestError(res.logger, res.err)
 }
 
 // WithLogger sets the logger for the responder.

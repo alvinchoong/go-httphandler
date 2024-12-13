@@ -43,20 +43,11 @@ func (res *successResponder) Respond(w http.ResponseWriter, r *http.Request) {
 	// Set response body and status code.
 	w.WriteHeader(res.statusCode)
 	if _, err := w.Write([]byte(res.body)); err != nil {
-		if res.logger != nil {
-			res.logger.Error("Failed to write HTTP response",
-				"error", err,
-			)
-		}
+		httphandler.WriteInternalServerError(w, res.logger, err)
 		return
 	}
 
-	if res.logger != nil {
-		res.logger.Info("Sent HTTP response",
-			"status_code", res.statusCode,
-			"response_body", res.body,
-		)
-	}
+	httphandler.LogResponse(res.logger, res.statusCode, "response_body", res.body)
 }
 
 // WithLogger sets the logger for the responder.

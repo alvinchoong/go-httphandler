@@ -1,6 +1,8 @@
 package httphandler
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Ensure redirectResponder implements Responder.
 var _ Responder = (*redirectResponder)(nil)
@@ -38,12 +40,7 @@ func (res *redirectResponder) Respond(w http.ResponseWriter, r *http.Request) {
 
 	// Redirect to the specified URL.
 	http.Redirect(w, r, res.url, res.statusCode)
-	if res.logger != nil {
-		res.logger.Info("Sent HTTP redirect",
-			"status_code", res.statusCode,
-			"redirect_url", res.url,
-		)
-	}
+	LogResponse(res.logger, res.statusCode, "redirect_url", res.url)
 }
 
 // WithLogger sets the logger for the responder.

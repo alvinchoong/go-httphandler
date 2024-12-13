@@ -70,21 +70,11 @@ func (res *fileResponder) Respond(w http.ResponseWriter, _ *http.Request) {
 		fmt.Sprintf(`%s; filename="%s"`, res.disposition, res.filename))
 
 	if _, err := io.Copy(w, res.reader); err != nil {
-		if res.logger != nil {
-			res.logger.Error("Failed to write HTTP response",
-				"error", err,
-			)
-		}
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		httphandler.WriteInternalServerError(w, res.logger, err)
 		return
 	}
 
-	if res.logger != nil {
-		res.logger.Info("Sent HTTP response",
-			"status_code", http.StatusOK,
-			"filename", res.filename,
-		)
-	}
+	httphandler.LogResponse(res.logger, http.StatusOK, "filename", res.filename)
 }
 
 // WithHeader adds a custom header to the response.
