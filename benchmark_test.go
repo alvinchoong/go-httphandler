@@ -29,8 +29,10 @@ func standardHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 // go-httphandler handler
-func customHandler(r *http.Request) httphandler.Responder {
-	return jsonresp.Success(testUser)
+func customHandler() http.HandlerFunc {
+	return httphandler.Handle(func(r *http.Request) httphandler.Responder {
+		return jsonresp.Success(testUser)
+	})
 }
 
 func BenchmarkJSONResponse(b *testing.B) {
@@ -48,13 +50,13 @@ func BenchmarkJSONResponse(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			r := httptest.NewRequest(http.MethodGet, "/user", nil)
 			w := httptest.NewRecorder()
-			httphandler.Handle(customHandler)(w, r)
+			customHandler()(w, r)
 		}
 	})
 }
 
-// Standard Go HTTP handler with input
-func standardHandlerWithInput(w http.ResponseWriter, r *http.Request) {
+// Standard Go HTTP handler + json decode
+func standardHandlerAndJSONDecode(w http.ResponseWriter, r *http.Request) {
 	var input User
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -62,29 +64,31 @@ func standardHandlerWithInput(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// go-httphandler handler with input
-func customHandlerWithInput(r *http.Request, input User) httphandler.Responder {
-	return nil
+// go-httphandler HandleWithInput
+func customHandlerWithInput() http.HandlerFunc {
+	return httphandler.HandleWithInput(func(r *http.Request, input User) httphandler.Responder {
+		return nil
+	})
 }
 
-func BenchmarkJSONRequestResponse(b *testing.B) {
+func BenchmarkJSONRequest(b *testing.B) {
 	inputJSON, _ := json.Marshal(testUser)
 
-	b.Run("Go/StandardHTTPHandlerWithInput", func(b *testing.B) {
+	b.Run("Go/StandardHTTPHandler/JSONDecode", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			r := httptest.NewRequest(http.MethodPost, "/user", bytes.NewReader(inputJSON))
 			w := httptest.NewRecorder()
-			standardHandlerWithInput(w, r)
+			standardHandlerAndJSONDecode(w, r)
 		}
 	})
 
-	b.Run("HTTPHandler/JSONRequestResponse", func(b *testing.B) {
+	b.Run("HTTPHandler/JSONBodyDecode", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			r := httptest.NewRequest(http.MethodPost, "/user", bytes.NewReader(inputJSON))
 			w := httptest.NewRecorder()
-			httphandler.HandleWithInput(customHandlerWithInput)(w, r)
+			customHandlerWithInput()(w, r)
 		}
 	})
 }

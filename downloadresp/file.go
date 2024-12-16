@@ -43,6 +43,11 @@ func Inline(reader io.Reader, filename string) *fileResponder {
 
 // Respond sends the response with custom headers.
 func (res *fileResponder) Respond(w http.ResponseWriter, _ *http.Request) {
+	// Set cookies.
+	for _, cookie := range res.cookies {
+		http.SetCookie(w, cookie)
+	}
+
 	// Add custom headers.
 	for key, values := range res.header {
 		for _, value := range values {
@@ -64,27 +69,12 @@ func (res *fileResponder) Respond(w http.ResponseWriter, _ *http.Request) {
 		"Content-Disposition",
 		fmt.Sprintf(`%s; filename="%s"`, res.disposition, res.filename))
 
-	// Set cookies.
-	for _, cookie := range res.cookies {
-		http.SetCookie(w, cookie)
-	}
-
 	if _, err := io.Copy(w, res.reader); err != nil {
-		if res.logger != nil {
-			res.logger.Error("Failed to write HTTP response",
-				"error", err,
-			)
-		}
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		httphandler.WriteInternalServerError(w, res.logger, err)
 		return
 	}
 
-	if res.logger != nil {
-		res.logger.Info("Sent HTTP response",
-			"status_code", http.StatusOK,
-			"filename", res.filename,
-		)
-	}
+	httphandler.LogResponse(res.logger, http.StatusOK, "filename", res.filename)
 }
 
 // WithHeader adds a custom header to the response.

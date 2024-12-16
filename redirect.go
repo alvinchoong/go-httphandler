@@ -1,6 +1,8 @@
 package httphandler
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Ensure redirectResponder implements Responder.
 var _ Responder = (*redirectResponder)(nil)
@@ -24,6 +26,11 @@ type redirectResponder struct {
 
 // Respond sents an HTTP redirect with custom headers, cookies, and status code.
 func (res *redirectResponder) Respond(w http.ResponseWriter, r *http.Request) {
+	// Set cookies.
+	for _, cookie := range res.cookies {
+		http.SetCookie(w, cookie)
+	}
+
 	// Add custom headers.
 	for key, values := range res.header {
 		for _, value := range values {
@@ -31,19 +38,9 @@ func (res *redirectResponder) Respond(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Set cookies.
-	for _, cookie := range res.cookies {
-		http.SetCookie(w, cookie)
-	}
-
 	// Redirect to the specified URL.
 	http.Redirect(w, r, res.url, res.statusCode)
-	if res.logger != nil {
-		res.logger.Info("Sent HTTP redirect",
-			"status_code", res.statusCode,
-			"redirect_url", res.url,
-		)
-	}
+	LogResponse(res.logger, res.statusCode, "redirect_url", res.url)
 }
 
 // WithLogger sets the logger for the responder.
