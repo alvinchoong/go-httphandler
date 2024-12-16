@@ -1,7 +1,6 @@
 package jsonresp
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 
@@ -79,17 +78,17 @@ func (res *successResponder[T]) WithCookie(cookie *http.Cookie) *successResponde
 func writeJSON(w http.ResponseWriter, v any, status int, logger httphandler.Logger) []byte {
 	w.Header().Set("Content-Type", "application/json")
 
-	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(v); err != nil {
+	b, err := json.Marshal(v)
+	if err != nil {
 		httphandler.WriteInternalServerError(w, logger, err, "data", v)
 		return nil
 	}
 
 	w.WriteHeader(status)
-	if _, err := w.Write(buf.Bytes()); err != nil {
-		httphandler.WriteInternalServerError(w, logger, err, "response_body", buf.String())
+	if _, err := w.Write(b); err != nil {
+		httphandler.WriteInternalServerError(w, logger, err, "response_body", string(b))
 		return nil
 	}
 
-	return buf.Bytes()
+	return b
 }
