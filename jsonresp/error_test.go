@@ -29,12 +29,20 @@ func TestError_Respond(t *testing.T) {
 		wantBody    string
 	}{
 		{
-			desc:        "basic",
+			desc:        "basic | string",
 			given:       jsonresp.Error(errors.New("invalid id"), "Invalid ID provided", http.StatusBadRequest),
 			wantCode:    http.StatusBadRequest,
 			wantHeaders: nil,
 			wantCookies: nil,
 			wantBody:    `{"error":"Invalid ID provided"}`,
+		},
+		{
+			desc:        "basic | map",
+			given:       jsonresp.Error(errors.New("invalid id"), map[string][]string{"id": {"Invalid ID provided"}}, http.StatusBadRequest),
+			wantCode:    http.StatusBadRequest,
+			wantHeaders: nil,
+			wantCookies: nil,
+			wantBody:    `{"error":{"id":["Invalid ID provided"]}}`,
 		},
 		{
 			desc: "with everything",
