@@ -242,8 +242,8 @@ productPipeline := httphandler.NewPipeline3(userPipeline, DecodeProduct)
 router.HandleFunc("POST /products", httphandler.HandlePipelineWithInput2(
     userPipeline,
     DecodeProductInput,
-    func(tenant Tenant, user User, input ProductInput) httphandler.Responder {
-        // Handler receives decoded tenant, user, and input data
+    func(ctx context.Context, tenant Tenant, user User, input ProductInput) httphandler.Responder {
+        // Handler receives request context, decoded tenant, user, and input data
         // Your business logic here
         return jsonresp.Success(result)
     },
@@ -253,8 +253,8 @@ router.HandleFunc("POST /products", httphandler.HandlePipelineWithInput2(
 router.HandleFunc("PUT /products/{id}", httphandler.HandlePipelineWithInput3(
     productPipeline,
     DecodeProductInput,
-    func(tenant Tenant, user User, product Product, input ProductInput) httphandler.Responder {
-        // Handler receives decoded tenant, user, product, and input data
+    func(ctx context.Context, tenant Tenant, user User, product Product, input ProductInput) httphandler.Responder {
+        // Handler receives request context, decoded tenant, user, product, and input data
         // Your business logic here
         return jsonresp.Success(result)
     },

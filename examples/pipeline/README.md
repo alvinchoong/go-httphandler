@@ -89,7 +89,7 @@ Handlers are registered using the `HandlePipelineWithInput2` and `HandlePipeline
 router.HandleFunc("GET /products/{id}", httphandler.HandlePipelineWithInput3(
     productPipeline,
     func(r *http.Request) (struct{}, error) { return struct{}{}, nil },
-    func(tenant Tenant, user User, product Product, _ struct{}) httphandler.Responder {
+    func(ctx context.Context, tenant Tenant, user User, product Product, _ struct{}) httphandler.Responder {
         return GetProduct(tenant, user, product)
     },
 ))

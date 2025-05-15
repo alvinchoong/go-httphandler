@@ -95,7 +95,7 @@ func WithInputErrorHandler(handler func(err error) Responder) func(*PipelineOpti
 func HandlePipelineWithInput1[C, T any](
     p Pipeline1[C],
     inputDecoder func(r *http.Request) (T, error),
-    handler func(ctx C, input T) Responder,
+    handler func(ctx context.Context, val C, input T) Responder,
 ) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         // Decode context
@@ -113,7 +113,7 @@ func HandlePipelineWithInput1[C, T any](
         }
 
         // Call handler
-        res := handler(ctx, input)
+        res := handler(r.Context(), ctx, input)
         if res == nil {
             w.WriteHeader(http.StatusNoContent)
             return

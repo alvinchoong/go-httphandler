@@ -112,7 +112,7 @@ func NewPipeline3[C1, C2, C3 any](
 func HandlePipelineWithInput1[C, T any](
     p Pipeline1[C],
     inputDecoder func(r *http.Request) (T, error),
-    handler func(ctx C, input T) Responder,
+    handler func(ctx context.Context, val C, input T) Responder,
 ) http.HandlerFunc {
     // Implementation
 }
@@ -121,7 +121,7 @@ func HandlePipelineWithInput1[C, T any](
 func HandlePipelineWithInput2[C1, C2, T any](
     p Pipeline2[C1, C2],
     inputDecoder func(r *http.Request) (T, error),
-    handler func(ctx1 C1, ctx2 C2, input T) Responder,
+    handler func(ctx context.Context, val1 C1, val2 C2, input T) Responder,
 ) http.HandlerFunc {
     // Implementation
 }
