@@ -13,8 +13,11 @@ import (
 func TestSuccess_Respond(t *testing.T) {
 	t.Parallel()
 
-	type SuccessData struct {
-		Message string `json:"message"`
+	type User struct {
+		ID        string `json:"id"`
+		Username  string `json:"username"`
+		Email     string `json:"email"`
+		CreatedAt string `json:"created_at,omitempty"`
 	}
 
 	cookie := &http.Cookie{
@@ -31,25 +34,51 @@ func TestSuccess_Respond(t *testing.T) {
 		wantBody    string
 	}{
 		{
-			desc:        "basic",
-			given:       jsonresp.Success(&SuccessData{Message: "Success"}),
+			desc:        "basic | nil",
+			given:       jsonresp.Success[any](nil),
 			wantCode:    http.StatusOK,
 			wantHeaders: nil,
 			wantCookies: nil,
-			wantBody:    `{"message":"Success"}`,
+			wantBody:    `null`,
+		},
+		{
+			desc:        "basic | string",
+			given:       jsonresp.Success(ptr("Operation completed successfully")),
+			wantCode:    http.StatusOK,
+			wantHeaders: nil,
+			wantCookies: nil,
+			wantBody:    `"Operation completed successfully"`,
+		},
+		{
+			desc:        "basic | map",
+			given:       jsonresp.Success(&map[string]string{"message": "Resource deleted successfully"}),
+			wantCode:    http.StatusOK,
+			wantHeaders: nil,
+			wantCookies: nil,
+			wantBody:    `{"message":"Resource deleted successfully"}`,
+		},
+		{
+			desc:        "basic | struct",
+			given:       jsonresp.Success(&User{ID: "usr_123", Username: "johndoe", Email: "john@example.com", CreatedAt: "2025-01-15T08:30:00Z"}),
+			wantCode:    http.StatusOK,
+			wantHeaders: nil,
+			wantCookies: nil,
+			wantBody:    `{"id":"usr_123","username":"johndoe","email":"john@example.com","created_at":"2025-01-15T08:30:00Z"}`,
 		},
 		{
 			desc: "with everything",
-			given: jsonresp.Success(&SuccessData{Message: "Created Successfully"}).
-				WithHeader("X-Test-1", "test value 1").
+			given: jsonresp.Success(&User{ID: "usr_789", Username: "johndoe", Email: "john@example.com", CreatedAt: "2025-01-15T08:30:00Z"}).
+				WithHeader("X-Request-ID", "req-abc123").
+				WithHeader("Location", "/api/users/usr_789").
 				WithStatus(http.StatusCreated).
 				WithCookie(cookie),
 			wantCode: http.StatusCreated,
 			wantHeaders: map[string]string{
-				"X-Test-1": "test value 1",
+				"X-Request-ID": "req-abc123",
+				"Location":     "/api/users/usr_789",
 			},
 			wantCookies: []*http.Cookie{cookie},
-			wantBody:    `{"message":"Created Successfully"}`,
+			wantBody:    `{"id":"usr_789","username":"johndoe","email":"john@example.com","created_at":"2025-01-15T08:30:00Z"}`,
 		},
 	}
 
@@ -71,10 +100,18 @@ func TestSuccess_Respond(t *testing.T) {
 			}
 
 			gotHeaders := w.Header()
+
+			// Always check for Content-Type header
+			gotContentType := gotHeaders.Get("Content-Type")
+			if gotContentType != "application/json" {
+				t.Errorf("Content-Type header: want 'application/json', got '%s'", gotContentType)
+			}
+
+			// Check other expected headers
 			for key, wantValue := range tc.wantHeaders {
 				gotValue := gotHeaders.Get(key)
 				if gotValue != wantValue {
-					t.Errorf("headers %s: want %s, got %s", key, wantValue, gotValue)
+					t.Errorf("header %s: want %s, got %s", key, wantValue, gotValue)
 				}
 			}
 
