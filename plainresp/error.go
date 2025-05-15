@@ -15,16 +15,16 @@ type errorResponder struct {
 	header     http.Header
 	statusCode int
 	cookies    []*http.Cookie
-	errMessage string
+	body       string
 	err        error
 }
 
 // Error creates a new errorResponder with the provided error, message, and status code.
 // The 'err' parameter can be used for internal logging.
-func Error(err error, message string, code int) *errorResponder {
+func Error(err error, body string, code int) *errorResponder {
 	return &errorResponder{
 		statusCode: code,
-		errMessage: message,
+		body:       body,
 		err:        err,
 	}
 }
@@ -34,7 +34,7 @@ func Error(err error, message string, code int) *errorResponder {
 func InternalServerError(err error) *errorResponder {
 	return &errorResponder{
 		statusCode: http.StatusInternalServerError,
-		errMessage: "Internal Server Error",
+		body:       "Internal Server Error",
 		err:        err,
 	}
 }
@@ -54,7 +54,7 @@ func (res *errorResponder) Respond(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	// Set response body and status code.
-	http.Error(w, res.errMessage, res.statusCode)
+	http.Error(w, res.body, res.statusCode)
 	httphandler.LogRequestError(res.logger, res.err)
 }
 
