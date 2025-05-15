@@ -73,20 +73,20 @@ curl -X PUT -H "X-Tenant-ID: t1" -H "Authorization: Bearer u1" \
 
 ### Pipeline Definition
 
-The pipeline is built using the `WithContext`, `WithContext2`, and `WithContext3` functions:
+The pipeline is built using the `NewPipeline1`, `NewPipeline2`, and `NewPipeline3` functions:
 
 ```go
-tenantPipeline := httphandler.WithContext(DecodeTenant)
-userPipeline := httphandler.WithContext2(tenantPipeline, DecodeUser)
-productPipeline := httphandler.WithContext3(userPipeline, DecodeProduct)
+tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
+userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
+productPipeline := httphandler.NewPipeline3(userPipeline, DecodeProduct)
 ```
 
 ### Handler Registration
 
-Handlers are registered using the `HandleWithInput2` and `HandleWithInput3` functions, which provide accumulated context and input data:
+Handlers are registered using the `HandlePipelineWithInput2` and `HandlePipelineWithInput3` functions, which provide accumulated context and input data:
 
 ```go
-router.HandleFunc("GET /products/{id}", httphandler.HandleWithInput3(
+router.HandleFunc("GET /products/{id}", httphandler.HandlePipelineWithInput3(
     productPipeline,
     func(r *http.Request) (struct{}, error) { return struct{}{}, nil },
     func(tenant Tenant, user User, product Product, _ struct{}) httphandler.Responder {

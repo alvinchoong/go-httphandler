@@ -226,20 +226,20 @@ The Request Pipeline Architecture provides a powerful way to chain HTTP request 
 
 ```go
 // Create a pipeline with one context type (e.g., Tenant)
-tenantPipeline := httphandler.WithContext(DecodeTenant)
+tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
 
 // Add a second context type (e.g., User)
-userPipeline := httphandler.WithContext2(tenantPipeline, DecodeUser)
+userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
 
 // Add a third context type (e.g., Product)
-productPipeline := httphandler.WithContext3(userPipeline, DecodeProduct)
+productPipeline := httphandler.NewPipeline3(userPipeline, DecodeProduct)
 ```
 
 ### Handler Registration
 
 ```go
 // Handler with tenant and user context plus input data
-router.HandleFunc("POST /products", httphandler.HandleWithInput2(
+router.HandleFunc("POST /products", httphandler.HandlePipelineWithInput2(
     userPipeline,
     DecodeProductInput,
     func(tenant Tenant, user User, input ProductInput) httphandler.Responder {
@@ -250,7 +250,7 @@ router.HandleFunc("POST /products", httphandler.HandleWithInput2(
 ))
 
 // Handler with tenant, user, and product context plus input data
-router.HandleFunc("PUT /products/{id}", httphandler.HandleWithInput3(
+router.HandleFunc("PUT /products/{id}", httphandler.HandlePipelineWithInput3(
     productPipeline,
     DecodeProductInput,
     func(tenant Tenant, user User, product Product, input ProductInput) httphandler.Responder {

@@ -307,8 +307,8 @@ func NewPipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 
 // ========== Handler creators ==========
 
-// HandleWithInput1 creates a handler with one context and input
-func HandleWithInput1[C, T any](
+// HandlePipelineWithInput1 creates a handler with one context and input
+func HandlePipelineWithInput1[C, T any](
 	p Pipeline1[C],
 	inputDecoder func(r *http.Request) (T, error),
 	handler func(val C, input T) Responder,
@@ -338,8 +338,8 @@ func HandleWithInput1[C, T any](
 	}
 }
 
-// HandleWithInput2 creates a handler with two contexts and input
-func HandleWithInput2[C1, C2, T any](
+// HandlePipelineWithInput2 creates a handler with two contexts and input
+func HandlePipelineWithInput2[C1, C2, T any](
 	p Pipeline2[C1, C2],
 	inputDecoder func(r *http.Request) (T, error),
 	handler func(val1 C1, val2 C2, input T) Responder,
@@ -376,8 +376,8 @@ func HandleWithInput2[C1, C2, T any](
 	}
 }
 
-// HandleWithInput3 creates a handler with three contexts and input
-func HandleWithInput3[C1, C2, C3, T any](
+// HandlePipelineWithInput3 creates a handler with three contexts and input
+func HandlePipelineWithInput3[C1, C2, C3, T any](
 	p Pipeline3[C1, C2, C3],
 	inputDecoder func(r *http.Request) (T, error),
 	handler func(val1 C1, val2 C2, val3 C3, input T) Responder,
@@ -421,8 +421,8 @@ func HandleWithInput3[C1, C2, C3, T any](
 	}
 }
 
-// HandleWithInput4 creates a handler with four contexts and input
-func HandleWithInput4[C1, C2, C3, C4, T any](
+// HandlePipelineWithInput4 creates a handler with four contexts and input
+func HandlePipelineWithInput4[C1, C2, C3, C4, T any](
 	p Pipeline4[C1, C2, C3, C4],
 	inputDecoder func(r *http.Request) (T, error),
 	handler func(val1 C1, val2 C2, val3 C3, val4 C4, input T) Responder,
@@ -473,8 +473,8 @@ func HandleWithInput4[C1, C2, C3, C4, T any](
 	}
 }
 
-// HandleWithInput5 creates a handler with five contexts and input
-func HandleWithInput5[C1, C2, C3, C4, C5, T any](
+// HandlePipelineWithInput5 creates a handler with five contexts and input
+func HandlePipelineWithInput5[C1, C2, C3, C4, C5, T any](
 	p Pipeline5[C1, C2, C3, C4, C5],
 	inputDecoder func(r *http.Request) (T, error),
 	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, input T) Responder,
@@ -532,8 +532,8 @@ func HandleWithInput5[C1, C2, C3, C4, C5, T any](
 	}
 }
 
-// HandleWithInput6 creates a handler with six contexts and input
-func HandleWithInput6[C1, C2, C3, C4, C5, C6, T any](
+// HandlePipelineWithInput6 creates a handler with six contexts and input
+func HandlePipelineWithInput6[C1, C2, C3, C4, C5, C6, T any](
 	p Pipeline6[C1, C2, C3, C4, C5, C6],
 	inputDecoder func(r *http.Request) (T, error),
 	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, input T) Responder,
@@ -598,8 +598,8 @@ func HandleWithInput6[C1, C2, C3, C4, C5, C6, T any](
 	}
 }
 
-// HandleWithInput7 creates a handler with seven contexts and input
-func HandleWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
+// HandlePipelineWithInput7 creates a handler with seven contexts and input
+func HandlePipelineWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 	p Pipeline7[C1, C2, C3, C4, C5, C6, C7],
 	inputDecoder func(r *http.Request) (T, error),
 	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, input T) Responder,
@@ -671,8 +671,8 @@ func HandleWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 	}
 }
 
-// HandleWithInput8 creates a handler with eight contexts and input
-func HandleWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any](
+// HandlePipelineWithInput8 creates a handler with eight contexts and input
+func HandlePipelineWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any](
 	p Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8],
 	inputDecoder func(r *http.Request) (T, error),
 	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, val8 C8, input T) Responder,

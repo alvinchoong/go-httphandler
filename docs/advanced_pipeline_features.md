@@ -44,8 +44,8 @@ type Pipeline1[C any] struct {
 #### Builder Functions with Options
 
 ```go
-// WithContext with options support
-func WithContext[C any](
+// NewPipeline1 with options support
+func NewPipeline1[C any](
     decoder func(r *http.Request) (C, error),
     options ...func(*PipelineOptions),
 ) Pipeline1[C] {
@@ -92,7 +92,7 @@ func WithInputErrorHandler(handler func(err error) Responder) func(*PipelineOpti
 #### Updated Handler Functions
 
 ```go
-func HandleWithInput1[C, T any](
+func HandlePipelineWithInput1[C, T any](
     p Pipeline1[C],
     inputDecoder func(r *http.Request) (T, error),
     handler func(ctx C, input T) Responder,

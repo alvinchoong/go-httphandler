@@ -80,14 +80,14 @@ type Pipeline3[C1, C2, C3 any] struct {
 
 ```go
 // Start a pipeline with one context type
-func WithContext[C any](
+func NewPipeline1[C any](
     decoder func(r *http.Request) (C, error),
 ) Pipeline1[C] {
     // Implementation
 }
 
 // Extend a pipeline with a second context decoder
-func WithContext2[C1, C2 any](
+func NewPipeline2[C1, C2 any](
     p Pipeline1[C1],
     decoder func(r *http.Request, c1 C1) (C2, error),
 ) Pipeline2[C1, C2] {
@@ -95,7 +95,7 @@ func WithContext2[C1, C2 any](
 }
 
 // Extend a pipeline with a third context decoder
-func WithContext3[C1, C2, C3 any](
+func NewPipeline3[C1, C2, C3 any](
     p Pipeline2[C1, C2],
     decoder func(r *http.Request, c1 C1, c2 C2) (C3, error),
 ) Pipeline3[C1, C2, C3] {
@@ -109,7 +109,7 @@ func WithContext3[C1, C2, C3 any](
 
 ```go
 // Create a handler with one context and input
-func HandleWithInput1[C, T any](
+func HandlePipelineWithInput1[C, T any](
     p Pipeline1[C],
     inputDecoder func(r *http.Request) (T, error),
     handler func(ctx C, input T) Responder,
@@ -118,7 +118,7 @@ func HandleWithInput1[C, T any](
 }
 
 // Create a handler with two contexts and input
-func HandleWithInput2[C1, C2, T any](
+func HandlePipelineWithInput2[C1, C2, T any](
     p Pipeline2[C1, C2],
     inputDecoder func(r *http.Request) (T, error),
     handler func(ctx1 C1, ctx2 C2, input T) Responder,
@@ -146,9 +146,9 @@ func DecodeUser(r *http.Request, tenant Tenant) (User, error) { /* ... */ }
 func DecodeThing(r *http.Request, tenant Tenant, user User) (Thing, error) { /* ... */ }
 
 // Create pipeline stages
-tenantPipeline := httphandler.WithContext(DecodeTenant)
-userPipeline := httphandler.WithContext2(tenantPipeline, DecodeUser)
-thingPipeline := httphandler.WithContext3(userPipeline, DecodeThing)
+tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
+userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
+thingPipeline := httphandler.NewPipeline3(userPipeline, DecodeThing)
 
 // Using the pipelines with different handler types
 router.HandleFunc("/login", httphandler.HandleWithInput1(
@@ -223,14 +223,14 @@ We've implemented free functions for creating and extending pipelines:
 
 ```go
 // WithContext starts a pipeline with one context type
-func WithContext[C any](decoder func(r *http.Request) (C, error)) Pipeline1[C] {
+func NewPipeline1[C any](decoder func(r *http.Request) (C, error)) Pipeline1[C] {
     return Pipeline1[C]{
         decoder: decoder,
     }
 }
 
 // WithContext2 extends a Pipeline1 with a second context decoder
-func WithContext2[C1, C2 any](
+func NewPipeline2[C1, C2 any](
     p Pipeline1[C1],
     decoder func(r *http.Request, c1 C1) (C2, error),
 ) Pipeline2[C1, C2] {
@@ -249,7 +249,7 @@ We've implemented functions to create HTTP handlers from pipelines:
 
 ```go
 // HandleWithInput1 creates a handler with one context and input
-func HandleWithInput1[C, T any](
+func HandlePipelineWithInput1[C, T any](
     p Pipeline1[C],
     inputDecoder func(r *http.Request) (T, error),
     handler func(ctx C, input T) Responder,
@@ -599,11 +599,11 @@ These standard decoders can be combined with the pipeline architecture to create
 
 ```go
 // Create pipeline stages
-tenantPipeline := httphandler.WithContext(DecodeTenant)
-userPipeline := httphandler.WithContext2(tenantPipeline, DecodeUser)
+tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
+userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
 
 // Route that requires tenant and user authentication, and extracts an ID from path parameters
-router.HandleFunc("GET /items/{id}", httphandler.HandleWithInput2(
+router.HandleFunc("GET /items/{id}", httphandler.HandlePipelineWithInput2(
     userPipeline,
     httphandler.IntPathParam("id"),
     func(tenant Tenant, user User, itemID int) httphandler.Responder {
