@@ -66,7 +66,11 @@ func main() {
 
 func createUser(r *http.Request, input UserInput) httphandler.Responder {
 	if err := validate(input); err != nil {
-		return jsonresp.Error(err, err.Error(), http.StatusBadRequest)
+		return jsonresp.Error(err, &map[string]any{
+			"code":    "VALIDATION_ERROR",
+			"message": "Invalid input data",
+			"details": err.Error(),
+		}, http.StatusBadRequest)
 	}
 
 	user := User{
@@ -84,7 +88,11 @@ func getUser(r *http.Request) httphandler.Responder {
 	id := r.PathValue("id")
 	user, exists := users[id]
 	if !exists {
-		return jsonresp.Error(nil, "User not found", http.StatusNotFound)
+		return jsonresp.Error(nil, &map[string]any{
+			"code":        "NOT_FOUND",
+			"message":     "User not found",
+			"resource_id": id,
+		}, http.StatusNotFound)
 	}
 
 	return jsonresp.Success(&user)
@@ -102,11 +110,19 @@ func updateUser(r *http.Request, input UserInput) httphandler.Responder {
 	id := r.PathValue("id")
 	user, exists := users[id]
 	if !exists {
-		return jsonresp.Error(nil, "User not found", http.StatusNotFound)
+		return jsonresp.Error(nil, &map[string]any{
+			"code":        "NOT_FOUND",
+			"message":     "User not found",
+			"resource_id": id,
+		}, http.StatusNotFound)
 	}
 
 	if err := validate(input); err != nil {
-		return jsonresp.Error(err, err.Error(), http.StatusBadRequest)
+		return jsonresp.Error(err, &map[string]any{
+			"code":    "VALIDATION_ERROR",
+			"message": "Invalid input data",
+			"details": err.Error(),
+		}, http.StatusBadRequest)
 	}
 
 	user.Name = input.Name
@@ -119,7 +135,11 @@ func updateUser(r *http.Request, input UserInput) httphandler.Responder {
 func deleteUser(r *http.Request) httphandler.Responder {
 	id := r.PathValue("id")
 	if _, exists := users[id]; !exists {
-		return jsonresp.Error(nil, "User not found", http.StatusNotFound)
+		return jsonresp.Error(nil, &map[string]any{
+			"code":        "NOT_FOUND",
+			"message":     "User not found",
+			"resource_id": id,
+		}, http.StatusNotFound)
 	}
 
 	delete(users, id)
