@@ -60,14 +60,14 @@ func TestPipelineCompilation(t *testing.T) {
 	}
 
 	// Create test pipeline chains
-	p1 := WithContext(decoder1)
-	p2 := WithContext2(p1, decoder2)
-	p3 := WithContext3(p2, decoder3)
-	p4 := WithContext4(p3, decoder4)
-	p5 := WithContext5(p4, decoder5)
-	p6 := WithContext6(p5, decoder6)
-	p7 := WithContext7(p6, decoder7)
-	p8 := WithContext8(p7, decoder8)
+	p1 := NewPipeline1(decoder1)
+	p2 := NewPipeline2(p1, decoder2)
+	p3 := NewPipeline3(p2, decoder3)
+	p4 := NewPipeline4(p3, decoder4)
+	p5 := NewPipeline5(p4, decoder5)
+	p6 := NewPipeline6(p5, decoder6)
+	p7 := NewPipeline7(p6, decoder7)
+	p8 := NewPipeline8(p7, decoder8)
 
 	// Create handlers (just verifying compilation)
 	_ = HandleWithInput1(p1, inputDecoder, func(ctx1 TestContext1, input TestInput) Responder {
@@ -146,8 +146,8 @@ func TestPipelineExecution(t *testing.T) {
 	}
 
 	// Create pipeline
-	userPipeline := WithContext(decodeUser)
-	actionPipeline := WithContext2(userPipeline, decodeAction)
+	userPipeline := NewPipeline1(decodeUser)
+	actionPipeline := NewPipeline2(userPipeline, decodeAction)
 
 	// Create handler
 	handler := HandleWithInput2(actionPipeline, decodeLoginInput,
@@ -187,7 +187,7 @@ func TestPipelineErrorHandling(t *testing.T) {
 	}
 
 	// Create pipeline with failing decoder
-	pipeline := WithContext(failingDecoder)
+	pipeline := NewPipeline1(failingDecoder)
 
 	// Create handler
 	handler := HandleWithInput1(pipeline, func(r *http.Request) (struct{}, error) {
@@ -255,7 +255,7 @@ func TestCustomErrorHandler(t *testing.T) {
 	}
 
 	// Test with custom context error handler
-	pipeline1 := WithContext(
+	pipeline1 := NewPipeline1(
 		failingDecoder,
 		WithContextErrorHandler(custom401Handler),
 	)
@@ -267,7 +267,7 @@ func TestCustomErrorHandler(t *testing.T) {
 	})
 
 	// Test with custom input error handler
-	pipeline2 := WithContext(
+	pipeline2 := NewPipeline1(
 		func(r *http.Request) (struct{}, error) { return struct{}{}, nil },
 		WithInputErrorHandler(custom422Handler),
 	)
@@ -365,14 +365,14 @@ func TestPipelineDeepChaining(t *testing.T) {
 	}
 
 	// Create the deepest pipeline
-	p1 := WithContext(decoder1)
-	p2 := WithContext2(p1, decoder2)
-	p3 := WithContext3(p2, decoder3)
-	p4 := WithContext4(p3, decoder4)
-	p5 := WithContext5(p4, decoder5)
-	p6 := WithContext6(p5, decoder6)
-	p7 := WithContext7(p6, decoder7)
-	p8 := WithContext8(p7, decoder8)
+	p1 := NewPipeline1(decoder1)
+	p2 := NewPipeline2(p1, decoder2)
+	p3 := NewPipeline3(p2, decoder3)
+	p4 := NewPipeline4(p3, decoder4)
+	p5 := NewPipeline5(p4, decoder5)
+	p6 := NewPipeline6(p5, decoder6)
+	p7 := NewPipeline7(p6, decoder7)
+	p8 := NewPipeline8(p7, decoder8)
 
 	// Create handler with all 8 contexts
 	handler := HandleWithInput8(p8, inputDecoder, 

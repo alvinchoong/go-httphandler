@@ -139,8 +139,8 @@ func (e *errorResponse) Respond(w http.ResponseWriter, r *http.Request) {
 
 // ========== Pipeline builders ==========
 
-// WithContext starts a pipeline with one context type
-func WithContext[C any](
+// NewPipeline1 creates a pipeline with one context type
+func NewPipeline1[C any](
 	decoder func(r *http.Request) (C, error),
 	options ...func(*PipelineOptions),
 ) Pipeline1[C] {
@@ -158,8 +158,8 @@ func WithContext[C any](
 	}
 }
 
-// WithContext2 extends a Pipeline1 with a second context decoder
-func WithContext2[C1, C2 any](
+// NewPipeline2 creates a pipeline with two context types
+func NewPipeline2[C1, C2 any](
 	p Pipeline1[C1],
 	decoder func(r *http.Request, c1 C1) (C2, error),
 	options ...func(*PipelineOptions),
@@ -179,8 +179,8 @@ func WithContext2[C1, C2 any](
 	}
 }
 
-// WithContext3 extends a Pipeline2 with a third context decoder
-func WithContext3[C1, C2, C3 any](
+// NewPipeline3 creates a pipeline with three context types
+func NewPipeline3[C1, C2, C3 any](
 	p Pipeline2[C1, C2],
 	decoder func(r *http.Request, c1 C1, c2 C2) (C3, error),
 	options ...func(*PipelineOptions),
@@ -200,8 +200,8 @@ func WithContext3[C1, C2, C3 any](
 	}
 }
 
-// WithContext4 extends a Pipeline3 with a fourth context decoder
-func WithContext4[C1, C2, C3, C4 any](
+// NewPipeline4 creates a pipeline with four context types
+func NewPipeline4[C1, C2, C3, C4 any](
 	p Pipeline3[C1, C2, C3],
 	decoder func(r *http.Request, c1 C1, c2 C2, c3 C3) (C4, error),
 	options ...func(*PipelineOptions),
@@ -221,8 +221,8 @@ func WithContext4[C1, C2, C3, C4 any](
 	}
 }
 
-// WithContext5 extends a Pipeline4 with a fifth context decoder
-func WithContext5[C1, C2, C3, C4, C5 any](
+// NewPipeline5 creates a pipeline with five context types
+func NewPipeline5[C1, C2, C3, C4, C5 any](
 	p Pipeline4[C1, C2, C3, C4],
 	decoder func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4) (C5, error),
 	options ...func(*PipelineOptions),
@@ -242,8 +242,8 @@ func WithContext5[C1, C2, C3, C4, C5 any](
 	}
 }
 
-// WithContext6 extends a Pipeline5 with a sixth context decoder
-func WithContext6[C1, C2, C3, C4, C5, C6 any](
+// NewPipeline6 creates a pipeline with six context types
+func NewPipeline6[C1, C2, C3, C4, C5, C6 any](
 	p Pipeline5[C1, C2, C3, C4, C5],
 	decoder func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4, c5 C5) (C6, error),
 	options ...func(*PipelineOptions),
@@ -263,8 +263,8 @@ func WithContext6[C1, C2, C3, C4, C5, C6 any](
 	}
 }
 
-// WithContext7 extends a Pipeline6 with a seventh context decoder
-func WithContext7[C1, C2, C3, C4, C5, C6, C7 any](
+// NewPipeline7 creates a pipeline with seven context types
+func NewPipeline7[C1, C2, C3, C4, C5, C6, C7 any](
 	p Pipeline6[C1, C2, C3, C4, C5, C6],
 	decoder func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4, c5 C5, c6 C6) (C7, error),
 	options ...func(*PipelineOptions),
@@ -284,8 +284,8 @@ func WithContext7[C1, C2, C3, C4, C5, C6, C7 any](
 	}
 }
 
-// WithContext8 extends a Pipeline7 with an eighth context decoder
-func WithContext8[C1, C2, C3, C4, C5, C6, C7, C8 any](
+// NewPipeline8 creates a pipeline with eight context types
+func NewPipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 	p Pipeline7[C1, C2, C3, C4, C5, C6, C7],
 	decoder func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4, c5 C5, c6 C6, c7 C7) (C8, error),
 	options ...func(*PipelineOptions),

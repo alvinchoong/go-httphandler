@@ -225,9 +225,9 @@ func UpdateProduct(tenant Tenant, user User, product Product, input ProductInput
 
 func main() {
 	// Create pipeline stages
-	tenantPipeline := httphandler.WithContext(DecodeTenant)
-	userPipeline := httphandler.WithContext2(tenantPipeline, DecodeUser)
-	productPipeline := httphandler.WithContext3(userPipeline, DecodeProduct)
+	tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
+	userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
+	productPipeline := httphandler.NewPipeline3(userPipeline, DecodeProduct)
 
 	// Set up router
 	router := http.NewServeMux()
