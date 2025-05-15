@@ -401,3 +401,124 @@ func TestPipelineDeepChaining(t *testing.T) {
 		t.Errorf("expected body %q, got %q", expected, w.Body.String())
 	}
 }
+
+// Test fixtures for unified pipeline approach
+// testInput is used for pipeline input stage tests
+type testInput struct {
+	Value string
+}
+
+// TestHandlePipelineWithInputStage tests the implementation that treats input as a pipeline stage
+func TestHandlePipelineWithInputStage(t *testing.T) {
+	// Create a simple decoder that returns a context value
+	contextDecoder := func(r *http.Request) (string, error) {
+		return "context-value", nil
+	}
+
+	// Create a simple input decoder that returns an input value
+	inputDecoder := func(r *http.Request) (testInput, error) {
+		return testInput{Value: "input-value"}, nil
+	}
+
+	// Create pipelines with just one context
+	pipeline1 := NewPipeline1(contextDecoder)
+
+	// Create a test handler function that verifies both context and input values
+	handlerCalled := false
+	handler := func(ctx context.Context, val string, input testInput) Responder {
+		handlerCalled = true
+		if val != "context-value" {
+			t.Errorf("Expected context value 'context-value', got '%s'", val)
+		}
+		if input.Value != "input-value" {
+			t.Errorf("Expected input value 'input-value', got '%s'", input.Value)
+		}
+		return &testResponder{message: "success"}
+	}
+
+	// Create the handler with the pipeline
+	handlerFunc := HandlePipelineWithInput1(pipeline1, inputDecoder, handler)
+
+	// Create a test request
+	req := httptest.NewRequest("GET", "/test", nil)
+	w := httptest.NewRecorder()
+
+	// Call the handler
+	handlerFunc(w, req)
+
+	// Verify the handler was called
+	if !handlerCalled {
+		t.Errorf("Handler was not called")
+	}
+
+	// Verify the response
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
+	}
+	if w.Body.String() != "success" {
+		t.Errorf("Expected body 'success', got '%s'", w.Body.String())
+	}
+}
+
+// TestHandlePipelineWithComplexInputStage tests the implementation with multiple contexts
+func TestHandlePipelineWithComplexInputStage(t *testing.T) {
+	// Create context decoders
+	contextDecoder1 := func(r *http.Request) (string, error) {
+		return "context1", nil
+	}
+
+	contextDecoder2 := func(r *http.Request, c1 string) (int, error) {
+		if c1 != "context1" {
+			t.Errorf("Expected c1 to be 'context1', got '%s'", c1)
+		}
+		return 42, nil
+	}
+
+	// Create an input decoder
+	inputDecoder := func(r *http.Request) (bool, error) {
+		return true, nil
+	}
+
+	// Create a pipeline with two contexts
+	pipeline1 := NewPipeline1(contextDecoder1)
+	pipeline2 := NewPipeline2(pipeline1, contextDecoder2)
+
+	// Create a test handler function
+	handlerCalled := false
+	handler := func(ctx context.Context, val1 string, val2 int, input bool) Responder {
+		handlerCalled = true
+		if val1 != "context1" {
+			t.Errorf("Expected val1 to be 'context1', got '%s'", val1)
+		}
+		if val2 != 42 {
+			t.Errorf("Expected val2 to be 42, got %d", val2)
+		}
+		if !input {
+			t.Errorf("Expected input to be true")
+		}
+		return &testResponder{message: "complex-success"}
+	}
+
+	// Create the handler with the pipeline
+	handlerFunc := HandlePipelineWithInput2(pipeline2, inputDecoder, handler)
+
+	// Create a test request
+	req := httptest.NewRequest("GET", "/test", nil)
+	w := httptest.NewRecorder()
+
+	// Call the handler
+	handlerFunc(w, req)
+
+	// Verify the handler was called
+	if !handlerCalled {
+		t.Errorf("Handler was not called")
+	}
+
+	// Verify the response
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
+	}
+	if w.Body.String() != "complex-success" {
+		t.Errorf("Expected body 'complex-success', got '%s'", w.Body.String())
+	}
+}
