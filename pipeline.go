@@ -311,11 +311,11 @@ func NewPipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 func HandleWithInput1[C, T any](
 	p Pipeline1[C],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx C, input T) Responder,
+	handler func(val C, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode context
-		ctx, err := p.decoder(r)
+		val, err := p.decoder(r)
 		if err != nil {
 			p.options.ContextErrorHandler(1, err).Respond(w, r)
 			return
@@ -329,7 +329,7 @@ func HandleWithInput1[C, T any](
 		}
 
 		// Call handler
-		res := handler(ctx, input)
+		res := handler(val, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -342,18 +342,18 @@ func HandleWithInput1[C, T any](
 func HandleWithInput2[C1, C2, T any](
 	p Pipeline2[C1, C2],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx1 C1, ctx2 C2, input T) Responder,
+	handler func(val1 C1, val2 C2, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
-		ctx1, err := p.p1.decoder(r)
+		val1, err := p.p1.decoder(r)
 		if err != nil {
 			p.options.ContextErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
-		ctx2, err := p.decoder(r, ctx1)
+		val2, err := p.decoder(r, val1)
 		if err != nil {
 			p.options.ContextErrorHandler(2, err).Respond(w, r)
 			return
@@ -367,7 +367,7 @@ func HandleWithInput2[C1, C2, T any](
 		}
 
 		// Call handler
-		res := handler(ctx1, ctx2, input)
+		res := handler(val1, val2, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -380,25 +380,25 @@ func HandleWithInput2[C1, C2, T any](
 func HandleWithInput3[C1, C2, C3, T any](
 	p Pipeline3[C1, C2, C3],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx1 C1, ctx2 C2, ctx3 C3, input T) Responder,
+	handler func(val1 C1, val2 C2, val3 C3, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
-		ctx1, err := p.p2.p1.decoder(r)
+		val1, err := p.p2.p1.decoder(r)
 		if err != nil {
 			p.options.ContextErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
-		ctx2, err := p.p2.decoder(r, ctx1)
+		val2, err := p.p2.decoder(r, val1)
 		if err != nil {
 			p.options.ContextErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
-		ctx3, err := p.decoder(r, ctx1, ctx2)
+		val3, err := p.decoder(r, val1, val2)
 		if err != nil {
 			p.options.ContextErrorHandler(3, err).Respond(w, r)
 			return
@@ -412,7 +412,7 @@ func HandleWithInput3[C1, C2, C3, T any](
 		}
 
 		// Call handler
-		res := handler(ctx1, ctx2, ctx3, input)
+		res := handler(val1, val2, val3, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -425,32 +425,32 @@ func HandleWithInput3[C1, C2, C3, T any](
 func HandleWithInput4[C1, C2, C3, C4, T any](
 	p Pipeline4[C1, C2, C3, C4],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx1 C1, ctx2 C2, ctx3 C3, ctx4 C4, input T) Responder,
+	handler func(val1 C1, val2 C2, val3 C3, val4 C4, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
-		ctx1, err := p.p3.p2.p1.decoder(r)
+		val1, err := p.p3.p2.p1.decoder(r)
 		if err != nil {
 			p.options.ContextErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
-		ctx2, err := p.p3.p2.decoder(r, ctx1)
+		val2, err := p.p3.p2.decoder(r, val1)
 		if err != nil {
 			p.options.ContextErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
-		ctx3, err := p.p3.decoder(r, ctx1, ctx2)
+		val3, err := p.p3.decoder(r, val1, val2)
 		if err != nil {
 			p.options.ContextErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
-		ctx4, err := p.decoder(r, ctx1, ctx2, ctx3)
+		val4, err := p.decoder(r, val1, val2, val3)
 		if err != nil {
 			p.options.ContextErrorHandler(4, err).Respond(w, r)
 			return
@@ -464,7 +464,7 @@ func HandleWithInput4[C1, C2, C3, C4, T any](
 		}
 
 		// Call handler
-		res := handler(ctx1, ctx2, ctx3, ctx4, input)
+		res := handler(val1, val2, val3, val4, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -477,39 +477,39 @@ func HandleWithInput4[C1, C2, C3, C4, T any](
 func HandleWithInput5[C1, C2, C3, C4, C5, T any](
 	p Pipeline5[C1, C2, C3, C4, C5],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx1 C1, ctx2 C2, ctx3 C3, ctx4 C4, ctx5 C5, input T) Responder,
+	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
-		ctx1, err := p.p4.p3.p2.p1.decoder(r)
+		val1, err := p.p4.p3.p2.p1.decoder(r)
 		if err != nil {
 			p.options.ContextErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
-		ctx2, err := p.p4.p3.p2.decoder(r, ctx1)
+		val2, err := p.p4.p3.p2.decoder(r, val1)
 		if err != nil {
 			p.options.ContextErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
-		ctx3, err := p.p4.p3.decoder(r, ctx1, ctx2)
+		val3, err := p.p4.p3.decoder(r, val1, val2)
 		if err != nil {
 			p.options.ContextErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
-		ctx4, err := p.p4.decoder(r, ctx1, ctx2, ctx3)
+		val4, err := p.p4.decoder(r, val1, val2, val3)
 		if err != nil {
 			p.options.ContextErrorHandler(4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
-		ctx5, err := p.decoder(r, ctx1, ctx2, ctx3, ctx4)
+		val5, err := p.decoder(r, val1, val2, val3, val4)
 		if err != nil {
 			p.options.ContextErrorHandler(5, err).Respond(w, r)
 			return
@@ -523,7 +523,7 @@ func HandleWithInput5[C1, C2, C3, C4, C5, T any](
 		}
 
 		// Call handler
-		res := handler(ctx1, ctx2, ctx3, ctx4, ctx5, input)
+		res := handler(val1, val2, val3, val4, val5, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -536,46 +536,46 @@ func HandleWithInput5[C1, C2, C3, C4, C5, T any](
 func HandleWithInput6[C1, C2, C3, C4, C5, C6, T any](
 	p Pipeline6[C1, C2, C3, C4, C5, C6],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx1 C1, ctx2 C2, ctx3 C3, ctx4 C4, ctx5 C5, ctx6 C6, input T) Responder,
+	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
-		ctx1, err := p.p5.p4.p3.p2.p1.decoder(r)
+		val1, err := p.p5.p4.p3.p2.p1.decoder(r)
 		if err != nil {
 			p.options.ContextErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
-		ctx2, err := p.p5.p4.p3.p2.decoder(r, ctx1)
+		val2, err := p.p5.p4.p3.p2.decoder(r, val1)
 		if err != nil {
 			p.options.ContextErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
-		ctx3, err := p.p5.p4.p3.decoder(r, ctx1, ctx2)
+		val3, err := p.p5.p4.p3.decoder(r, val1, val2)
 		if err != nil {
 			p.options.ContextErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
-		ctx4, err := p.p5.p4.decoder(r, ctx1, ctx2, ctx3)
+		val4, err := p.p5.p4.decoder(r, val1, val2, val3)
 		if err != nil {
 			p.options.ContextErrorHandler(4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
-		ctx5, err := p.p5.decoder(r, ctx1, ctx2, ctx3, ctx4)
+		val5, err := p.p5.decoder(r, val1, val2, val3, val4)
 		if err != nil {
 			p.options.ContextErrorHandler(5, err).Respond(w, r)
 			return
 		}
 
 		// Decode sixth context
-		ctx6, err := p.decoder(r, ctx1, ctx2, ctx3, ctx4, ctx5)
+		val6, err := p.decoder(r, val1, val2, val3, val4, val5)
 		if err != nil {
 			p.options.ContextErrorHandler(6, err).Respond(w, r)
 			return
@@ -589,7 +589,7 @@ func HandleWithInput6[C1, C2, C3, C4, C5, C6, T any](
 		}
 
 		// Call handler
-		res := handler(ctx1, ctx2, ctx3, ctx4, ctx5, ctx6, input)
+		res := handler(val1, val2, val3, val4, val5, val6, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -602,53 +602,53 @@ func HandleWithInput6[C1, C2, C3, C4, C5, C6, T any](
 func HandleWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 	p Pipeline7[C1, C2, C3, C4, C5, C6, C7],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx1 C1, ctx2 C2, ctx3 C3, ctx4 C4, ctx5 C5, ctx6 C6, ctx7 C7, input T) Responder,
+	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
-		ctx1, err := p.p6.p5.p4.p3.p2.p1.decoder(r)
+		val1, err := p.p6.p5.p4.p3.p2.p1.decoder(r)
 		if err != nil {
 			p.options.ContextErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
-		ctx2, err := p.p6.p5.p4.p3.p2.decoder(r, ctx1)
+		val2, err := p.p6.p5.p4.p3.p2.decoder(r, val1)
 		if err != nil {
 			p.options.ContextErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
-		ctx3, err := p.p6.p5.p4.p3.decoder(r, ctx1, ctx2)
+		val3, err := p.p6.p5.p4.p3.decoder(r, val1, val2)
 		if err != nil {
 			p.options.ContextErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
-		ctx4, err := p.p6.p5.p4.decoder(r, ctx1, ctx2, ctx3)
+		val4, err := p.p6.p5.p4.decoder(r, val1, val2, val3)
 		if err != nil {
 			p.options.ContextErrorHandler(4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
-		ctx5, err := p.p6.p5.decoder(r, ctx1, ctx2, ctx3, ctx4)
+		val5, err := p.p6.p5.decoder(r, val1, val2, val3, val4)
 		if err != nil {
 			p.options.ContextErrorHandler(5, err).Respond(w, r)
 			return
 		}
 
 		// Decode sixth context
-		ctx6, err := p.p6.decoder(r, ctx1, ctx2, ctx3, ctx4, ctx5)
+		val6, err := p.p6.decoder(r, val1, val2, val3, val4, val5)
 		if err != nil {
 			p.options.ContextErrorHandler(6, err).Respond(w, r)
 			return
 		}
 
 		// Decode seventh context
-		ctx7, err := p.decoder(r, ctx1, ctx2, ctx3, ctx4, ctx5, ctx6)
+		val7, err := p.decoder(r, val1, val2, val3, val4, val5, val6)
 		if err != nil {
 			p.options.ContextErrorHandler(7, err).Respond(w, r)
 			return
@@ -662,7 +662,7 @@ func HandleWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 		}
 
 		// Call handler
-		res := handler(ctx1, ctx2, ctx3, ctx4, ctx5, ctx6, ctx7, input)
+		res := handler(val1, val2, val3, val4, val5, val6, val7, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -675,60 +675,60 @@ func HandleWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 func HandleWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any](
 	p Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx1 C1, ctx2 C2, ctx3 C3, ctx4 C4, ctx5 C5, ctx6 C6, ctx7 C7, ctx8 C8, input T) Responder,
+	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, val8 C8, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
-		ctx1, err := p.p7.p6.p5.p4.p3.p2.p1.decoder(r)
+		val1, err := p.p7.p6.p5.p4.p3.p2.p1.decoder(r)
 		if err != nil {
 			p.options.ContextErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
-		ctx2, err := p.p7.p6.p5.p4.p3.p2.decoder(r, ctx1)
+		val2, err := p.p7.p6.p5.p4.p3.p2.decoder(r, val1)
 		if err != nil {
 			p.options.ContextErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
-		ctx3, err := p.p7.p6.p5.p4.p3.decoder(r, ctx1, ctx2)
+		val3, err := p.p7.p6.p5.p4.p3.decoder(r, val1, val2)
 		if err != nil {
 			p.options.ContextErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
-		ctx4, err := p.p7.p6.p5.p4.decoder(r, ctx1, ctx2, ctx3)
+		val4, err := p.p7.p6.p5.p4.decoder(r, val1, val2, val3)
 		if err != nil {
 			p.options.ContextErrorHandler(4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
-		ctx5, err := p.p7.p6.p5.decoder(r, ctx1, ctx2, ctx3, ctx4)
+		val5, err := p.p7.p6.p5.decoder(r, val1, val2, val3, val4)
 		if err != nil {
 			p.options.ContextErrorHandler(5, err).Respond(w, r)
 			return
 		}
 
 		// Decode sixth context
-		ctx6, err := p.p7.p6.decoder(r, ctx1, ctx2, ctx3, ctx4, ctx5)
+		val6, err := p.p7.p6.decoder(r, val1, val2, val3, val4, val5)
 		if err != nil {
 			p.options.ContextErrorHandler(6, err).Respond(w, r)
 			return
 		}
 
 		// Decode seventh context
-		ctx7, err := p.p7.decoder(r, ctx1, ctx2, ctx3, ctx4, ctx5, ctx6)
+		val7, err := p.p7.decoder(r, val1, val2, val3, val4, val5, val6)
 		if err != nil {
 			p.options.ContextErrorHandler(7, err).Respond(w, r)
 			return
 		}
 
 		// Decode eighth context
-		ctx8, err := p.decoder(r, ctx1, ctx2, ctx3, ctx4, ctx5, ctx6, ctx7)
+		val8, err := p.decoder(r, val1, val2, val3, val4, val5, val6, val7)
 		if err != nil {
 			p.options.ContextErrorHandler(8, err).Respond(w, r)
 			return
@@ -742,7 +742,7 @@ func HandleWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any](
 		}
 
 		// Call handler
-		res := handler(ctx1, ctx2, ctx3, ctx4, ctx5, ctx6, ctx7, ctx8, input)
+		res := handler(val1, val2, val3, val4, val5, val6, val7, val8, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
