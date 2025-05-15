@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -236,7 +237,7 @@ func main() {
 	router.HandleFunc("GET /products", httphandler.HandlePipelineWithInput2(
 		userPipeline,
 		func(r *http.Request) (struct{}, error) { return struct{}{}, nil },
-		func(tenant Tenant, user User, _ struct{}) httphandler.Responder {
+		func(ctx context.Context, tenant Tenant, user User, _ struct{}) httphandler.Responder {
 			return ListProducts(tenant, user)
 		},
 	))
@@ -245,7 +246,7 @@ func main() {
 	router.HandleFunc("GET /products/{id}", httphandler.HandlePipelineWithInput3(
 		productPipeline,
 		func(r *http.Request) (struct{}, error) { return struct{}{}, nil },
-		func(tenant Tenant, user User, product Product, _ struct{}) httphandler.Responder {
+		func(ctx context.Context, tenant Tenant, user User, product Product, _ struct{}) httphandler.Responder {
 			return GetProduct(tenant, user, product)
 		},
 	))
@@ -254,7 +255,7 @@ func main() {
 	router.HandleFunc("POST /products", httphandler.HandlePipelineWithInput2(
 		userPipeline,
 		DecodeProductInput,
-		func(tenant Tenant, user User, input ProductInput) httphandler.Responder {
+		func(ctx context.Context, tenant Tenant, user User, input ProductInput) httphandler.Responder {
 			return CreateProduct(tenant, user, input)
 		},
 	))
@@ -263,7 +264,7 @@ func main() {
 	router.HandleFunc("PUT /products/{id}", httphandler.HandlePipelineWithInput3(
 		productPipeline,
 		DecodeProductInput,
-		func(tenant Tenant, user User, product Product, input ProductInput) httphandler.Responder {
+		func(ctx context.Context, tenant Tenant, user User, product Product, input ProductInput) httphandler.Responder {
 			return UpdateProduct(tenant, user, product, input)
 		},
 	))

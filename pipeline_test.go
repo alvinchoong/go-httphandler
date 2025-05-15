@@ -1,6 +1,7 @@
 package httphandler
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -70,35 +71,35 @@ func TestPipelineCompilation(t *testing.T) {
 	p8 := NewPipeline8(p7, decoder8)
 
 	// Create handlers (just verifying compilation)
-	_ = HandlePipelineWithInput1(p1, inputDecoder, func(ctx1 TestContext1, input TestInput) Responder {
+	_ = HandlePipelineWithInput1(p1, inputDecoder, func(ctx context.Context, ctx1 TestContext1, input TestInput) Responder {
 		return nil
 	})
 
-	_ = HandlePipelineWithInput2(p2, inputDecoder, func(ctx1 TestContext1, ctx2 TestContext2, input TestInput) Responder {
+	_ = HandlePipelineWithInput2(p2, inputDecoder, func(ctx context.Context, ctx1 TestContext1, ctx2 TestContext2, input TestInput) Responder {
 		return nil
 	})
 
-	_ = HandlePipelineWithInput3(p3, inputDecoder, func(ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, input TestInput) Responder {
+	_ = HandlePipelineWithInput3(p3, inputDecoder, func(ctx context.Context, ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, input TestInput) Responder {
 		return nil
 	})
 
-	_ = HandlePipelineWithInput4(p4, inputDecoder, func(ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, input TestInput) Responder {
+	_ = HandlePipelineWithInput4(p4, inputDecoder, func(ctx context.Context, ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, input TestInput) Responder {
 		return nil
 	})
 
-	_ = HandlePipelineWithInput5(p5, inputDecoder, func(ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, ctx5 TestContext5, input TestInput) Responder {
+	_ = HandlePipelineWithInput5(p5, inputDecoder, func(ctx context.Context, ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, ctx5 TestContext5, input TestInput) Responder {
 		return nil
 	})
 
-	_ = HandlePipelineWithInput6(p6, inputDecoder, func(ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, ctx5 TestContext5, ctx6 TestContext6, input TestInput) Responder {
+	_ = HandlePipelineWithInput6(p6, inputDecoder, func(ctx context.Context, ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, ctx5 TestContext5, ctx6 TestContext6, input TestInput) Responder {
 		return nil
 	})
 
-	_ = HandlePipelineWithInput7(p7, inputDecoder, func(ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, ctx5 TestContext5, ctx6 TestContext6, ctx7 TestContext7, input TestInput) Responder {
+	_ = HandlePipelineWithInput7(p7, inputDecoder, func(ctx context.Context, ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, ctx5 TestContext5, ctx6 TestContext6, ctx7 TestContext7, input TestInput) Responder {
 		return nil
 	})
 
-	_ = HandlePipelineWithInput8(p8, inputDecoder, func(ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, ctx5 TestContext5, ctx6 TestContext6, ctx7 TestContext7, ctx8 TestContext8, input TestInput) Responder {
+	_ = HandlePipelineWithInput8(p8, inputDecoder, func(ctx context.Context, ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, ctx4 TestContext4, ctx5 TestContext5, ctx6 TestContext6, ctx7 TestContext7, ctx8 TestContext8, input TestInput) Responder {
 		return nil
 	})
 
@@ -151,7 +152,7 @@ func TestPipelineExecution(t *testing.T) {
 
 	// Create handler
 	handler := HandlePipelineWithInput2(actionPipeline, decodeLoginInput,
-		func(user UserContext, action ActionContext, input LoginInput) Responder {
+		func(ctx context.Context, user UserContext, action ActionContext, input LoginInput) Responder {
 			// Simple success responder for testing
 			return &testResponder{
 				message: "Success: " + user.Username + " " + action.Action + " " + input.Password,
@@ -192,7 +193,7 @@ func TestPipelineErrorHandling(t *testing.T) {
 	// Create handler
 	handler := HandlePipelineWithInput1(pipeline, func(r *http.Request) (struct{}, error) {
 		return struct{}{}, nil
-	}, func(ctx struct{}, input struct{}) Responder {
+	}, func(ctx context.Context, val struct{}, input struct{}) Responder {
 		return &testResponder{message: "This should not be called"}
 	})
 
@@ -262,7 +263,7 @@ func TestCustomErrorHandler(t *testing.T) {
 
 	handler1 := HandlePipelineWithInput1(pipeline1, func(r *http.Request) (struct{}, error) {
 		return struct{}{}, nil
-	}, func(ctx struct{}, input struct{}) Responder {
+	}, func(ctx context.Context, val struct{}, input struct{}) Responder {
 		return &testResponder{message: "This should not be called"}
 	})
 
@@ -272,7 +273,7 @@ func TestCustomErrorHandler(t *testing.T) {
 		WithInputErrorHandler(custom422Handler),
 	)
 
-	handler2 := HandlePipelineWithInput1(pipeline2, failingInputDecoder, func(ctx struct{}, input struct{}) Responder {
+	handler2 := HandlePipelineWithInput1(pipeline2, failingInputDecoder, func(ctx context.Context, val struct{}, input struct{}) Responder {
 		return &testResponder{message: "This should not be called"}
 	})
 
@@ -376,7 +377,7 @@ func TestPipelineDeepChaining(t *testing.T) {
 
 	// Create handler with all 8 contexts
 	handler := HandlePipelineWithInput8(p8, inputDecoder, 
-		func(c1 Context1, c2 Context2, c3 Context3, c4 Context4, c5 Context5, c6 Context6, c7 Context7, c8 Context8, input Input) Responder {
+		func(ctx context.Context, c1 Context1, c2 Context2, c3 Context3, c4 Context4, c5 Context5, c6 Context6, c7 Context7, c8 Context8, input Input) Responder {
 			return &testResponder{
 				message: fmt.Sprintf("c1=%s, c2=%s, c3=%s, c4=%s, c5=%s, c6=%s, c7=%s, c8=%s, input=%s",
 					c1.Value, c2.Value, c3.Value, c4.Value, c5.Value, c6.Value, c7.Value, c8.Value, input.Value),

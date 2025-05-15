@@ -1,6 +1,7 @@
 package httphandler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 )
@@ -311,7 +312,7 @@ func NewPipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 func HandlePipelineWithInput1[C, T any](
 	p Pipeline1[C],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(val C, input T) Responder,
+	handler func(ctx context.Context, val C, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode context
@@ -328,8 +329,8 @@ func HandlePipelineWithInput1[C, T any](
 			return
 		}
 
-		// Call handler
-		res := handler(val, input)
+		// Call handler with request context
+		res := handler(r.Context(), val, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -342,7 +343,7 @@ func HandlePipelineWithInput1[C, T any](
 func HandlePipelineWithInput2[C1, C2, T any](
 	p Pipeline2[C1, C2],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(val1 C1, val2 C2, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -366,8 +367,8 @@ func HandlePipelineWithInput2[C1, C2, T any](
 			return
 		}
 
-		// Call handler
-		res := handler(val1, val2, input)
+		// Call handler with request context
+		res := handler(r.Context(), val1, val2, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -380,7 +381,7 @@ func HandlePipelineWithInput2[C1, C2, T any](
 func HandlePipelineWithInput3[C1, C2, C3, T any](
 	p Pipeline3[C1, C2, C3],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(val1 C1, val2 C2, val3 C3, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -411,8 +412,8 @@ func HandlePipelineWithInput3[C1, C2, C3, T any](
 			return
 		}
 
-		// Call handler
-		res := handler(val1, val2, val3, input)
+		// Call handler with request context
+		res := handler(r.Context(), val1, val2, val3, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -425,7 +426,7 @@ func HandlePipelineWithInput3[C1, C2, C3, T any](
 func HandlePipelineWithInput4[C1, C2, C3, C4, T any](
 	p Pipeline4[C1, C2, C3, C4],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(val1 C1, val2 C2, val3 C3, val4 C4, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -463,8 +464,8 @@ func HandlePipelineWithInput4[C1, C2, C3, C4, T any](
 			return
 		}
 
-		// Call handler
-		res := handler(val1, val2, val3, val4, input)
+		// Call handler with request context
+		res := handler(r.Context(), val1, val2, val3, val4, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -477,7 +478,7 @@ func HandlePipelineWithInput4[C1, C2, C3, C4, T any](
 func HandlePipelineWithInput5[C1, C2, C3, C4, C5, T any](
 	p Pipeline5[C1, C2, C3, C4, C5],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -522,8 +523,8 @@ func HandlePipelineWithInput5[C1, C2, C3, C4, C5, T any](
 			return
 		}
 
-		// Call handler
-		res := handler(val1, val2, val3, val4, val5, input)
+		// Call handler with request context
+		res := handler(r.Context(), val1, val2, val3, val4, val5, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -536,7 +537,7 @@ func HandlePipelineWithInput5[C1, C2, C3, C4, C5, T any](
 func HandlePipelineWithInput6[C1, C2, C3, C4, C5, C6, T any](
 	p Pipeline6[C1, C2, C3, C4, C5, C6],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -588,8 +589,8 @@ func HandlePipelineWithInput6[C1, C2, C3, C4, C5, C6, T any](
 			return
 		}
 
-		// Call handler
-		res := handler(val1, val2, val3, val4, val5, val6, input)
+		// Call handler with request context
+		res := handler(r.Context(), val1, val2, val3, val4, val5, val6, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -602,7 +603,7 @@ func HandlePipelineWithInput6[C1, C2, C3, C4, C5, C6, T any](
 func HandlePipelineWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 	p Pipeline7[C1, C2, C3, C4, C5, C6, C7],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -661,8 +662,8 @@ func HandlePipelineWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 			return
 		}
 
-		// Call handler
-		res := handler(val1, val2, val3, val4, val5, val6, val7, input)
+		// Call handler with request context
+		res := handler(r.Context(), val1, val2, val3, val4, val5, val6, val7, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
@@ -675,7 +676,7 @@ func HandlePipelineWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 func HandlePipelineWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any](
 	p Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, val8 C8, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, val8 C8, input T) Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -741,8 +742,8 @@ func HandlePipelineWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any](
 			return
 		}
 
-		// Call handler
-		res := handler(val1, val2, val3, val4, val5, val6, val7, val8, input)
+		// Call handler with request context
+		res := handler(r.Context(), val1, val2, val3, val4, val5, val6, val7, val8, input)
 		if res == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
