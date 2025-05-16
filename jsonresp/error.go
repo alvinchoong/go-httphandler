@@ -11,10 +11,10 @@ var _ httphandler.Responder = (*errorResponder[any])(nil)
 
 // Error creates a standardized error response with the specified error message and HTTP status code.
 // The 'err' parameter can be used for internal logging.
-func Error[T any](err error, errData T, code int) *errorResponder[T] {
+func Error[T any](err error, data *T, code int) *errorResponder[T] {
 	return &errorResponder[T]{
 		statusCode: code,
-		errData:    errData,
+		data:       data,
 		err:        err,
 	}
 }
@@ -22,9 +22,10 @@ func Error[T any](err error, errData T, code int) *errorResponder[T] {
 // InternalServerError creates a standardized internal server error response.
 // The 'err' parameter can be used for internal logging.
 func InternalServerError(err error) *errorResponder[string] {
+	s := "Internal Server Error"
 	return &errorResponder[string]{
 		statusCode: http.StatusInternalServerError,
-		errData:    "Internal Server Error",
+		data:       &s,
 		err:        err,
 	}
 }
@@ -35,7 +36,7 @@ type errorResponder[T any] struct {
 	header     http.Header
 	statusCode int
 	cookies    []*http.Cookie
-	errData    T
+	data       *T
 	err        error
 }
 
@@ -54,7 +55,7 @@ func (res *errorResponder[T]) Respond(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	// Write the error JSON response.
-	writeJSON(w, map[string]T{"error": res.errData}, res.statusCode, res.logger)
+	writeJSON(w, res.data, res.statusCode, res.logger)
 	httphandler.LogRequestError(res.logger, res.err)
 }
 

@@ -54,7 +54,10 @@ router.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request
 router.HandleFunc("GET /users/{id}", httphandler.Handle(func(r *http.Request) httphandler.Responder {
     user := getUser(r.PathValue("id"))
     if user == nil {
-        return jsonresp.Error(nil, "User not found", http.StatusNotFound)
+        return jsonresp.Error(nil, &ErrorResponse{
+            Code:    "NOT_FOUND",
+            Message: "User not found",
+        }, http.StatusNotFound)
     }
     return jsonresp.Success(user)
 }))
@@ -79,7 +82,10 @@ func getUserHandler(r *http.Request) httphandler.Responder {
         return jsonresp.InternalServerError(err)
     }
     if user == nil {
-        return jsonresp.Error(nil, "User not found", http.StatusNotFound)
+        return jsonresp.Error(nil, &ErrorResponse{
+            Code:    "NOT_FOUND",
+            Message: "User not found",
+        }, http.StatusNotFound)
     }
     return jsonresp.Success(user)
 }
@@ -134,7 +140,11 @@ return jsonresp.Success(data).
 ```go
 func createUserHandler(r *http.Request, input CreateUserInput) httphandler.Responder {
     if err := input.Validate(); err != nil {
-        return jsonresp.Error(err, "Invalid input", http.StatusBadRequest)
+        return jsonresp.Error(err, &ValidationError{
+            Code:    "VALIDATION_ERROR",
+            Message: "Invalid input",
+            Details: err.Error(),
+        }, http.StatusBadRequest)
     }
     
     user, err := createUser(input)
