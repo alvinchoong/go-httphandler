@@ -225,10 +225,10 @@ func UpdateProduct(tenant Tenant, user User, product Product, input ProductInput
 }
 
 func main() {
-	// Create pipeline stages
-	tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
-	userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
-	productPipeline := httphandler.NewPipeline3(userPipeline, DecodeProduct)
+	// Create pipeline stages with the new flattened structure
+	// Pass nil for PipelineOptions when default error handling is sufficient
+	userPipeline := httphandler.NewPipeline2(DecodeTenant, DecodeUser, nil)
+	productPipeline := httphandler.NewPipeline3(DecodeTenant, DecodeUser, DecodeProduct, nil)
 
 	// Set up router
 	router := http.NewServeMux()
