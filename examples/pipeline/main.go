@@ -183,7 +183,7 @@ func GetProduct(tenant Tenant, user User, product Product) httphandler.Responder
 func CreateProduct(tenant Tenant, user User, input ProductInput) httphandler.Responder {
 	// Check if user has admin role
 	if user.Role != "admin" {
-		return jsonresp.Error(nil, "permission denied", http.StatusForbidden)
+		return jsonresp.Error[string](fmt.Errorf("permission denied"), nil, http.StatusForbidden)
 	}
 
 	// Create new product
@@ -208,7 +208,7 @@ func CreateProduct(tenant Tenant, user User, input ProductInput) httphandler.Res
 func UpdateProduct(tenant Tenant, user User, product Product, input ProductInput) httphandler.Responder {
 	// Check if user has admin role
 	if user.Role != "admin" {
-		return jsonresp.Error(nil, "permission denied", http.StatusForbidden)
+		return jsonresp.Error[string](fmt.Errorf("permission denied"), nil, http.StatusForbidden)
 	}
 
 	// Update product
