@@ -36,7 +36,7 @@ type PipelineOptions struct {
 
 // Pipeline1 with options
 type Pipeline1[C any] struct {
-    decoder func(r *http.Request) (C, error)
+    decoder1 func(r *http.Request) (C, error)
     options PipelineOptions
 }
 ```
@@ -47,26 +47,30 @@ type Pipeline1[C any] struct {
 // NewPipeline1 with options support
 func NewPipeline1[C any](
     decoder func(r *http.Request) (C, error),
-    options ...func(*PipelineOptions),
+    opts *PipelineOptions,
 ) Pipeline1[C] {
-    // Default options
-    opts := PipelineOptions{
-        ContextErrorHandler: func(stage int, err error) Responder {
-            return errorResponder(fmt.Errorf("stage %d context error: %w", stage, err))
-        },
-        InputErrorHandler: func(err error) Responder {
-            return errorResponder(fmt.Errorf("input error: %w", err))
-        },
+    // Set default options if opts is nil
+    options := PipelineOptions{}
+    if opts != nil {
+        options = *opts
     }
     
-    // Apply provided options
-    for _, option := range options {
-        option(&opts)
+    // If options handlers are not set, use defaults
+    if options.ContextErrorHandler == nil {
+        options.ContextErrorHandler = func(stage int, err error) Responder {
+            return errorResponder(fmt.Errorf("stage %d context error: %w", stage, err))
+        }
+    }
+    
+    if options.InputErrorHandler == nil {
+        options.InputErrorHandler = func(err error) Responder {
+            return errorResponder(fmt.Errorf("input error: %w", err))
+        }
     }
     
     return Pipeline1[C]{
-        decoder: decoder,
-        options: opts,
+        decoder1: decoder,
+        options: options,
     }
 }
 ```
@@ -99,7 +103,7 @@ func HandlePipelineWithInput1[C, T any](
 ) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         // Decode context
-        ctx, err := p.decoder(r)
+        val, err := p.decoder1(r)
         if err != nil {
             p.options.ContextErrorHandler(1, err).Respond(w, r)
             return
@@ -113,7 +117,7 @@ func HandlePipelineWithInput1[C, T any](
         }
 
         // Call handler
-        res := handler(r.Context(), ctx, input)
+        res := handler(r.Context(), val, input)
         if res == nil {
             w.WriteHeader(http.StatusNoContent)
             return
@@ -127,15 +131,18 @@ func HandlePipelineWithInput1[C, T any](
 
 ```go
 // Create a pipeline with custom error handling
-tenantPipeline := httphandler.WithContext(
+options := &httphandler.PipelineOptions{}
+httphandler.WithContextErrorHandler(func(stage int, err error) httphandler.Responder {
+    // Custom tenant-specific error handling
+    if strings.Contains(err.Error(), "tenant not found") {
+        return jsonresp.Error(nil, "Invalid tenant", http.StatusUnauthorized)
+    }
+    return jsonresp.Error(nil, err.Error(), http.StatusBadRequest)
+})(options)
+
+tenantPipeline := httphandler.NewPipeline1(
     DecodeTenant,
-    httphandler.WithContextErrorHandler(func(stage int, err error) httphandler.Responder {
-        // Custom tenant-specific error handling
-        if strings.Contains(err.Error(), "tenant not found") {
-            return jsonresp.Error(nil, "Invalid tenant", http.StatusUnauthorized)
-        }
-        return jsonresp.Error(nil, err.Error(), http.StatusBadRequest)
-    }),
+    options
 )
 ```
 
