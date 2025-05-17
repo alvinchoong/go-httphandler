@@ -35,10 +35,10 @@ Decoders are functions that extract and validate information from HTTP requests.
 2. **Contextual Decoders**: Take the request and context from previous stages
    ```go
    // Generic contextual decoder with one previous context
-   type ContextualDecoder[C1, C2 any] func(r *http.Request, ctx1 C1) (C2, error)
+   type ContextualDecoder[C1, C2 any] func(r *http.Request, val1 C1) (C2, error)
    
    // Generic contextual decoder with two previous contexts
-   type ContextualDecoder2[C1, C2, C3 any] func(r *http.Request, ctx1 C1, ctx2 C2) (C3, error)
+   type ContextualDecoder2[C1, C2, C3 any] func(r *http.Request, val1 C1, val2 C2) (C3, error)
    
    // And so on for more contexts
    ```
@@ -56,19 +56,23 @@ Due to Go's constraint that methods cannot have their own type parameters, we ne
 ```go
 // Pipeline with one context type
 type Pipeline1[C any] struct {
-    decoder func(r *http.Request) (C, error)
+    decoder1 func(r *http.Request) (C, error)
+    options  PipelineOptions
 }
 
 // Pipeline with two context types
 type Pipeline2[C1, C2 any] struct {
-    p1      Pipeline1[C1]
-    decoder func(r *http.Request, c1 C1) (C2, error)
+    decoder1 func(r *http.Request) (C1, error)
+    decoder2 func(r *http.Request, val1 C1) (C2, error)
+    options  PipelineOptions
 }
 
 // Pipeline with three context types
 type Pipeline3[C1, C2, C3 any] struct {
-    p2      Pipeline2[C1, C2]
-    decoder func(r *http.Request, c1 C1, c2 C2) (C3, error)
+    decoder1 func(r *http.Request) (C1, error)
+    decoder2 func(r *http.Request, val1 C1) (C2, error)
+    decoder3 func(r *http.Request, val1 C1, val2 C2) (C3, error)
+    options  PipelineOptions
 }
 
 // Extended to support Pipeline4, Pipeline5, Pipeline6, Pipeline7, and Pipeline8
@@ -82,6 +86,7 @@ type Pipeline3[C1, C2, C3 any] struct {
 // Start a pipeline with one context type
 func NewPipeline1[C any](
     decoder func(r *http.Request) (C, error),
+    opts *PipelineOptions,
 ) Pipeline1[C] {
     // Implementation
 }
@@ -89,7 +94,8 @@ func NewPipeline1[C any](
 // Extend a pipeline with a second context decoder
 func NewPipeline2[C1, C2 any](
     p Pipeline1[C1],
-    decoder func(r *http.Request, c1 C1) (C2, error),
+    decoder func(r *http.Request, val1 C1) (C2, error),
+    opts *PipelineOptions,
 ) Pipeline2[C1, C2] {
     // Implementation
 }
@@ -97,12 +103,13 @@ func NewPipeline2[C1, C2 any](
 // Extend a pipeline with a third context decoder
 func NewPipeline3[C1, C2, C3 any](
     p Pipeline2[C1, C2],
-    decoder func(r *http.Request, c1 C1, c2 C2) (C3, error),
+    decoder func(r *http.Request, val1 C1, val2 C2) (C3, error),
+    opts *PipelineOptions,
 ) Pipeline3[C1, C2, C3] {
     // Implementation
 }
 
-// Extended to support WithContext4 through WithContext8
+// Extended to support NewPipeline4 through NewPipeline8
 ```
 
 ### Handler Creation
@@ -248,15 +255,15 @@ And similar functions for WithContext3 and WithContext4. These functions make th
 We've implemented functions to create HTTP handlers from pipelines:
 
 ```go
-// HandleWithInput1 creates a handler with one context and input
+// HandlePipelineWithInput1 creates a handler with one context and input
 func HandlePipelineWithInput1[C, T any](
     p Pipeline1[C],
     inputDecoder func(r *http.Request) (T, error),
-    handler func(ctx C, input T) Responder,
+    handler func(ctx context.Context, val C, input T) Responder,
 ) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         // Decode context
-        ctx, err := p.decoder(r)
+        val, err := p.decoder1(r)
         if err != nil {
             errorResponder(fmt.Errorf("context decode error: %w", err)).Respond(w, r)
             return
@@ -345,11 +352,11 @@ func TestPipelineCompilation(t *testing.T) {
         return TestContext1{}, nil
     }
     
-    decoder2 := func(r *http.Request, ctx1 TestContext1) (TestContext2, error) {
+    decoder2 := func(r *http.Request, val1 TestContext1) (TestContext2, error) {
         return TestContext2{}, nil
     }
     
-    decoder3 := func(r *http.Request, ctx1 TestContext1, ctx2 TestContext2) (TestContext3, error) {
+    decoder3 := func(r *http.Request, val1 TestContext1, val2 TestContext2) (TestContext3, error) {
         return TestContext3{}, nil
     }
     
@@ -357,21 +364,21 @@ func TestPipelineCompilation(t *testing.T) {
         return TestInput{}, nil
     }
     
-    // Create test pipeline chains to verify compilation
-    p1 := WithContext(decoder1)
-    p2 := p1.WithContext(decoder2)
-    p3 := p2.WithContext(decoder3)
+    // Create pipelines with different depth
+    p1 := NewPipeline1(decoder1, nil)
+    p2 := NewPipeline2(p1, decoder2, nil)
+    p3 := NewPipeline3(p2, decoder3, nil)
     
     // Create handlers with various context depths
-    _ = p1.HandleWithInput(inputDecoder, func(ctx1 TestContext1, input TestInput) Responder {
+    _ = HandlePipelineWithInput1(p1, inputDecoder, func(ctx context.Context, val1 TestContext1, input TestInput) Responder {
         return nil // Stub implementation
     })
     
-    _ = p2.HandleWithInput(inputDecoder, func(ctx1 TestContext1, ctx2 TestContext2, input TestInput) Responder {
+    _ = HandlePipelineWithInput2(p2, inputDecoder, func(ctx context.Context, val1 TestContext1, val2 TestContext2, input TestInput) Responder {
         return nil // Stub implementation
     })
     
-    _ = p3.HandleWithInput(inputDecoder, func(ctx1 TestContext1, ctx2 TestContext2, ctx3 TestContext3, input TestInput) Responder {
+    _ = HandlePipelineWithInput3(p3, inputDecoder, func(ctx context.Context, val1 TestContext1, val2 TestContext2, val3 TestContext3, input TestInput) Responder {
         return nil // Stub implementation
     })
     
@@ -599,14 +606,14 @@ These standard decoders can be combined with the pipeline architecture to create
 
 ```go
 // Create pipeline stages
-tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
-userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
+tenantPipeline := httphandler.NewPipeline1(DecodeTenant, nil)
+userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser, nil)
 
 // Route that requires tenant and user authentication, and extracts an ID from path parameters
 router.HandleFunc("GET /items/{id}", httphandler.HandlePipelineWithInput2(
     userPipeline,
     httphandler.IntPathParam("id"),
-    func(tenant Tenant, user User, itemID int) httphandler.Responder {
+    func(ctx context.Context, tenant Tenant, user User, itemID int) httphandler.Responder {
         // Handler logic with tenant, user, and item ID
         return jsonresp.Success(item)
     },
