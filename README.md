@@ -14,6 +14,7 @@ A zero-dependency HTTP response handler for Go that makes writing HTTP handlers 
 - 🔄 **Flexible Request Parsing**: Built-in JSON parsing with support for custom decoders
 - 🧩 **Easily Extendable**: Create custom response types and request decoders
 - 📝 **Integrated Logging**: Optional logging support for all response types
+- 🔗 **Request Pipeline Architecture**: Type-safe middleware-like functionality using Go's generics
 
 ## Why go-httphandler?
 
@@ -160,7 +161,10 @@ router.HandleFunc("POST /users", httphandler.HandleWithInput(createUserHandler))
 
 ### Additional Examples
 
-For more examples including a full REST API implementation see [examples/main.go](examples/main.go)
+For more examples see:
+
+- [Basic REST API Example](examples/basic/main.go) - Simple REST API implementation
+- [Request Pipeline Architecture Example](examples/pipeline/main.go) - Demonstrates the pipeline architecture for multi-tenant applications
 
 ## Creating Custom Response Types
 
@@ -209,6 +213,62 @@ func csvReportHandler(r *http.Request) httphandler.Responder {
         {"John Doe", "john@example.com", "30"},
         {"Jane Doe", "jane@example.com", "28"},
     }
+
+    return NewCSVResponse(records, "users.csv")
+}
+```
+
+## Request Pipeline Architecture
+
+The Request Pipeline Architecture provides a powerful way to chain HTTP request processing stages while maintaining type safety using Go's generics. This enables middleware-like functionality where each stage extracts and validates part of the request, accumulating context for your handler.
+
+### Pipeline Types
+
+```go
+// Create a pipeline with one context type (e.g., Tenant)
+tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
+
+// Add a second context type (e.g., User)
+userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
+
+// Add a third context type (e.g., Product)
+productPipeline := httphandler.NewPipeline3(userPipeline, DecodeProduct)
+```
+
+### Handler Registration
+
+```go
+// Handler with tenant and user context plus input data
+router.HandleFunc("POST /products", httphandler.HandlePipelineWithInput2(
+    userPipeline,
+    DecodeProductInput,
+    func(ctx context.Context, tenant Tenant, user User, input ProductInput) httphandler.Responder {
+        // Handler receives request context, decoded tenant, user, and input data
+        // Your business logic here
+        return jsonresp.Success(result)
+    },
+))
+
+// Handler with tenant, user, and product context plus input data
+router.HandleFunc("PUT /products/{id}", httphandler.HandlePipelineWithInput3(
+    productPipeline,
+    DecodeProductInput,
+    func(ctx context.Context, tenant Tenant, user User, product Product, input ProductInput) httphandler.Responder {
+        // Handler receives request context, decoded tenant, user, product, and input data
+        // Your business logic here
+        return jsonresp.Success(result)
+    },
+))
+```
+
+### Benefits
+
+- **Type-Safe**: All context and input values are fully typed
+- **Composable**: Build and reuse pipeline stages across routes
+- **Error Handling**: Each stage can return errors that are automatically converted to HTTP responses
+- **Separation of Concerns**: Validate request context before handler execution
+
+For a complete example of the Request Pipeline Architecture, see [examples/pipeline/main.go](examples/pipeline/main.go) and its [documentation](examples/pipeline/README.md).
     return NewCSVResponse(records, "users.csv")
 }
 ```
