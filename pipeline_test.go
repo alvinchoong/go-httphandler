@@ -223,7 +223,7 @@ func TestCustomErrorHandler(t *testing.T) {
 	inputError := errors.New("missing required field")
 
 	// Test direct error handling
-	t.Run("CustomContextErrorHandler", func(t *testing.T) {
+	t.Run("CustomDecodeErrorHandler", func(t *testing.T) {
 		// Create a custom error responder directly
 		resp := &customErrorResponder{
 			statusCode: http.StatusUnauthorized,
@@ -328,7 +328,7 @@ func TestPipelineDeepChaining(t *testing.T) {
 	p8 := NewPipeline8(decoder1, decoder2, decoder3, decoder4, decoder5, decoder6, decoder7, decoder8, nil)
 
 	// Create handler with all 8 contexts
-	handler := HandlePipelineWithInput8(p8, inputDecoder, 
+	handler := HandlePipelineWithInput8(p8, inputDecoder,
 		func(ctx context.Context, c1 Context1, c2 Context2, c3 Context3, c4 Context4, c5 Context5, c6 Context6, c7 Context7, c8 Context8, input Input) Responder {
 			return &testResponder{
 				message: fmt.Sprintf("c1=%s, c2=%s, c3=%s, c4=%s, c5=%s, c6=%s, c7=%s, c8=%s, input=%s",

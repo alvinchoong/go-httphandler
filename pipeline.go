@@ -9,8 +9,8 @@ import (
 
 // PipelineOptions holds configurable options for pipelines
 type PipelineOptions struct {
-	// ContextErrorHandler handles errors from context decoders
-	ContextErrorHandler func(stage int, err error) Responder
+	// DecodeErrorHandler handles errors from context decoders
+	DecodeErrorHandler func(stage int, err error) Responder
 
 	// InputErrorHandler handles errors from input decoders
 	InputErrorHandler func(err error) Responder
@@ -288,7 +288,7 @@ func errorResponder(err error) Responder {
 // defaultOptions returns the default PipelineOptions
 func defaultOptions() PipelineOptions {
 	return PipelineOptions{
-		ContextErrorHandler: func(stage int, err error) Responder {
+		DecodeErrorHandler: func(stage int, err error) Responder {
 			return errorResponder(fmt.Errorf("context%d decode error: %w", stage, err))
 		},
 		InputErrorHandler: func(err error) Responder {
@@ -297,10 +297,10 @@ func defaultOptions() PipelineOptions {
 	}
 }
 
-// WithContextErrorHandler returns an option that sets a custom context error handler
-func WithContextErrorHandler(handler func(stage int, err error) Responder) func(*PipelineOptions) {
+// WithDecodeErrorHandler returns an option that sets a custom context error handler
+func WithDecodeErrorHandler(handler func(stage int, err error) Responder) func(*PipelineOptions) {
 	return func(opts *PipelineOptions) {
-		opts.ContextErrorHandler = handler
+		opts.DecodeErrorHandler = handler
 	}
 }
 

@@ -9,11 +9,11 @@ import (
 // ========== Regular pipeline handlers ==========
 
 // Default error handlers when options is nil
-func handleContextError(options *PipelineOptions, stage int, err error) Responder {
-	if options == nil || options.ContextErrorHandler == nil {
+func handleDecodeError(options *PipelineOptions, stage int, err error) Responder {
+	if options == nil || options.DecodeErrorHandler == nil {
 		return defaultErrorHandler(err)
 	}
-	return options.ContextErrorHandler(stage, err)
+	return options.DecodeErrorHandler(stage, err)
 }
 
 func handleInputError(options *PipelineOptions, err error) Responder {
@@ -48,7 +48,7 @@ func HandlePipeline1[C any](
 		// Decode context
 		val, err := p.decoder1(r)
 		if err != nil {
-			p.options.ContextErrorHandler(1, err).Respond(w, r)
+			p.options.DecodeErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
@@ -71,14 +71,14 @@ func HandlePipeline2[C1, C2 any](
 		// Decode first context
 		val1, err := p.decoder1(r)
 		if err != nil {
-			p.options.ContextErrorHandler(1, err).Respond(w, r)
+			p.options.DecodeErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := p.decoder2(r, val1)
 		if err != nil {
-			p.options.ContextErrorHandler(2, err).Respond(w, r)
+			p.options.DecodeErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
@@ -101,21 +101,21 @@ func HandlePipeline3[C1, C2, C3 any](
 		// Decode first context
 		val1, err := p.decoder1(r)
 		if err != nil {
-			p.options.ContextErrorHandler(1, err).Respond(w, r)
+			p.options.DecodeErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := p.decoder2(r, val1)
 		if err != nil {
-			p.options.ContextErrorHandler(2, err).Respond(w, r)
+			p.options.DecodeErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := p.decoder3(r, val1, val2)
 		if err != nil {
-			p.options.ContextErrorHandler(3, err).Respond(w, r)
+			p.options.DecodeErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
@@ -138,28 +138,28 @@ func HandlePipeline4[C1, C2, C3, C4 any](
 		// Decode first context
 		val1, err := p.decoder1(r)
 		if err != nil {
-			p.options.ContextErrorHandler(1, err).Respond(w, r)
+			p.options.DecodeErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := p.decoder2(r, val1)
 		if err != nil {
-			p.options.ContextErrorHandler(2, err).Respond(w, r)
+			p.options.DecodeErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := p.decoder3(r, val1, val2)
 		if err != nil {
-			p.options.ContextErrorHandler(3, err).Respond(w, r)
+			p.options.DecodeErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := p.decoder4(r, val1, val2, val3)
 		if err != nil {
-			p.options.ContextErrorHandler(4, err).Respond(w, r)
+			p.options.DecodeErrorHandler(4, err).Respond(w, r)
 			return
 		}
 
@@ -182,35 +182,35 @@ func HandlePipeline5[C1, C2, C3, C4, C5 any](
 		// Decode first context
 		val1, err := p.decoder1(r)
 		if err != nil {
-			p.options.ContextErrorHandler(1, err).Respond(w, r)
+			p.options.DecodeErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := p.decoder2(r, val1)
 		if err != nil {
-			p.options.ContextErrorHandler(2, err).Respond(w, r)
+			p.options.DecodeErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := p.decoder3(r, val1, val2)
 		if err != nil {
-			p.options.ContextErrorHandler(3, err).Respond(w, r)
+			p.options.DecodeErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := p.decoder4(r, val1, val2, val3)
 		if err != nil {
-			p.options.ContextErrorHandler(4, err).Respond(w, r)
+			p.options.DecodeErrorHandler(4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
 		val5, err := p.decoder5(r, val1, val2, val3, val4)
 		if err != nil {
-			p.options.ContextErrorHandler(5, err).Respond(w, r)
+			p.options.DecodeErrorHandler(5, err).Respond(w, r)
 			return
 		}
 
@@ -233,42 +233,42 @@ func HandlePipeline6[C1, C2, C3, C4, C5, C6 any](
 		// Decode first context
 		val1, err := p.decoder1(r)
 		if err != nil {
-			p.options.ContextErrorHandler(1, err).Respond(w, r)
+			p.options.DecodeErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := p.decoder2(r, val1)
 		if err != nil {
-			p.options.ContextErrorHandler(2, err).Respond(w, r)
+			p.options.DecodeErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := p.decoder3(r, val1, val2)
 		if err != nil {
-			p.options.ContextErrorHandler(3, err).Respond(w, r)
+			p.options.DecodeErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := p.decoder4(r, val1, val2, val3)
 		if err != nil {
-			p.options.ContextErrorHandler(4, err).Respond(w, r)
+			p.options.DecodeErrorHandler(4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
 		val5, err := p.decoder5(r, val1, val2, val3, val4)
 		if err != nil {
-			p.options.ContextErrorHandler(5, err).Respond(w, r)
+			p.options.DecodeErrorHandler(5, err).Respond(w, r)
 			return
 		}
 
 		// Decode sixth context
 		val6, err := p.decoder6(r, val1, val2, val3, val4, val5)
 		if err != nil {
-			p.options.ContextErrorHandler(6, err).Respond(w, r)
+			p.options.DecodeErrorHandler(6, err).Respond(w, r)
 			return
 		}
 
@@ -291,49 +291,49 @@ func HandlePipeline7[C1, C2, C3, C4, C5, C6, C7 any](
 		// Decode first context
 		val1, err := p.decoder1(r)
 		if err != nil {
-			p.options.ContextErrorHandler(1, err).Respond(w, r)
+			p.options.DecodeErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := p.decoder2(r, val1)
 		if err != nil {
-			p.options.ContextErrorHandler(2, err).Respond(w, r)
+			p.options.DecodeErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := p.decoder3(r, val1, val2)
 		if err != nil {
-			p.options.ContextErrorHandler(3, err).Respond(w, r)
+			p.options.DecodeErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := p.decoder4(r, val1, val2, val3)
 		if err != nil {
-			p.options.ContextErrorHandler(4, err).Respond(w, r)
+			p.options.DecodeErrorHandler(4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
 		val5, err := p.decoder5(r, val1, val2, val3, val4)
 		if err != nil {
-			p.options.ContextErrorHandler(5, err).Respond(w, r)
+			p.options.DecodeErrorHandler(5, err).Respond(w, r)
 			return
 		}
 
 		// Decode sixth context
 		val6, err := p.decoder6(r, val1, val2, val3, val4, val5)
 		if err != nil {
-			p.options.ContextErrorHandler(6, err).Respond(w, r)
+			p.options.DecodeErrorHandler(6, err).Respond(w, r)
 			return
 		}
 
 		// Decode seventh context
 		val7, err := p.decoder7(r, val1, val2, val3, val4, val5, val6)
 		if err != nil {
-			p.options.ContextErrorHandler(7, err).Respond(w, r)
+			p.options.DecodeErrorHandler(7, err).Respond(w, r)
 			return
 		}
 
@@ -356,56 +356,56 @@ func HandlePipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 		// Decode first context
 		val1, err := p.decoder1(r)
 		if err != nil {
-			p.options.ContextErrorHandler(1, err).Respond(w, r)
+			p.options.DecodeErrorHandler(1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := p.decoder2(r, val1)
 		if err != nil {
-			p.options.ContextErrorHandler(2, err).Respond(w, r)
+			p.options.DecodeErrorHandler(2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := p.decoder3(r, val1, val2)
 		if err != nil {
-			p.options.ContextErrorHandler(3, err).Respond(w, r)
+			p.options.DecodeErrorHandler(3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := p.decoder4(r, val1, val2, val3)
 		if err != nil {
-			p.options.ContextErrorHandler(4, err).Respond(w, r)
+			p.options.DecodeErrorHandler(4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
 		val5, err := p.decoder5(r, val1, val2, val3, val4)
 		if err != nil {
-			p.options.ContextErrorHandler(5, err).Respond(w, r)
+			p.options.DecodeErrorHandler(5, err).Respond(w, r)
 			return
 		}
 
 		// Decode sixth context
 		val6, err := p.decoder6(r, val1, val2, val3, val4, val5)
 		if err != nil {
-			p.options.ContextErrorHandler(6, err).Respond(w, r)
+			p.options.DecodeErrorHandler(6, err).Respond(w, r)
 			return
 		}
 
 		// Decode seventh context
 		val7, err := p.decoder7(r, val1, val2, val3, val4, val5, val6)
 		if err != nil {
-			p.options.ContextErrorHandler(7, err).Respond(w, r)
+			p.options.DecodeErrorHandler(7, err).Respond(w, r)
 			return
 		}
 
 		// Decode eighth context
 		val8, err := p.decoder8(r, val1, val2, val3, val4, val5, val6, val7)
 		if err != nil {
-			p.options.ContextErrorHandler(8, err).Respond(w, r)
+			p.options.DecodeErrorHandler(8, err).Respond(w, r)
 			return
 		}
 
@@ -432,7 +432,7 @@ func NewPipelineWithInput1[C, T any](
 	for _, option := range options {
 		option(opts)
 	}
-	
+
 	return PipelineWithInput1[C, T]{
 		decoder1: p.decoder1,
 		decoder2: func(r *http.Request, c C) (T, error) {
@@ -714,7 +714,7 @@ func HandlePipelineWithInput1[C, T any](
 		// Decode first context
 		val1, err := pipeline.decoder1(r)
 		if err != nil {
-			handleContextError(&pipeline.options, 1, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 1, err).Respond(w, r)
 			return
 		}
 
@@ -747,14 +747,14 @@ func HandlePipelineWithInput2[C1, C2, T any](
 		// Decode first context
 		val1, err := pipeline.decoder1(r)
 		if err != nil {
-			handleContextError(&pipeline.options, 1, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := pipeline.decoder2(r, val1)
 		if err != nil {
-			handleContextError(&pipeline.options, 2, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 2, err).Respond(w, r)
 			return
 		}
 
@@ -787,21 +787,21 @@ func HandlePipelineWithInput3[C1, C2, C3, T any](
 		// Decode first context
 		val1, err := pipeline.decoder1(r)
 		if err != nil {
-			handleContextError(&pipeline.options, 1, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := pipeline.decoder2(r, val1)
 		if err != nil {
-			handleContextError(&pipeline.options, 2, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := pipeline.decoder3(r, val1, val2)
 		if err != nil {
-			handleContextError(&pipeline.options, 3, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 3, err).Respond(w, r)
 			return
 		}
 
@@ -834,28 +834,28 @@ func HandlePipelineWithInput4[C1, C2, C3, C4, T any](
 		// Decode first context
 		val1, err := pipeline.decoder1(r)
 		if err != nil {
-			handleContextError(&pipeline.options, 1, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := pipeline.decoder2(r, val1)
 		if err != nil {
-			handleContextError(&pipeline.options, 2, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := pipeline.decoder3(r, val1, val2)
 		if err != nil {
-			handleContextError(&pipeline.options, 3, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := pipeline.decoder4(r, val1, val2, val3)
 		if err != nil {
-			handleContextError(&pipeline.options, 4, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 4, err).Respond(w, r)
 			return
 		}
 
@@ -888,35 +888,35 @@ func HandlePipelineWithInput5[C1, C2, C3, C4, C5, T any](
 		// Decode first context
 		val1, err := pipeline.decoder1(r)
 		if err != nil {
-			handleContextError(&pipeline.options, 1, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := pipeline.decoder2(r, val1)
 		if err != nil {
-			handleContextError(&pipeline.options, 2, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := pipeline.decoder3(r, val1, val2)
 		if err != nil {
-			handleContextError(&pipeline.options, 3, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := pipeline.decoder4(r, val1, val2, val3)
 		if err != nil {
-			handleContextError(&pipeline.options, 4, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
 		val5, err := pipeline.decoder5(r, val1, val2, val3, val4)
 		if err != nil {
-			handleContextError(&pipeline.options, 5, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 5, err).Respond(w, r)
 			return
 		}
 
@@ -949,42 +949,42 @@ func HandlePipelineWithInput6[C1, C2, C3, C4, C5, C6, T any](
 		// Decode first context
 		val1, err := pipeline.decoder1(r)
 		if err != nil {
-			handleContextError(&pipeline.options, 1, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := pipeline.decoder2(r, val1)
 		if err != nil {
-			handleContextError(&pipeline.options, 2, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := pipeline.decoder3(r, val1, val2)
 		if err != nil {
-			handleContextError(&pipeline.options, 3, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := pipeline.decoder4(r, val1, val2, val3)
 		if err != nil {
-			handleContextError(&pipeline.options, 4, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
 		val5, err := pipeline.decoder5(r, val1, val2, val3, val4)
 		if err != nil {
-			handleContextError(&pipeline.options, 5, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 5, err).Respond(w, r)
 			return
 		}
 
 		// Decode sixth context
 		val6, err := pipeline.decoder6(r, val1, val2, val3, val4, val5)
 		if err != nil {
-			handleContextError(&pipeline.options, 6, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 6, err).Respond(w, r)
 			return
 		}
 
@@ -1017,49 +1017,49 @@ func HandlePipelineWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 		// Decode first context
 		val1, err := pipeline.decoder1(r)
 		if err != nil {
-			handleContextError(&pipeline.options, 1, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := pipeline.decoder2(r, val1)
 		if err != nil {
-			handleContextError(&pipeline.options, 2, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := pipeline.decoder3(r, val1, val2)
 		if err != nil {
-			handleContextError(&pipeline.options, 3, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := pipeline.decoder4(r, val1, val2, val3)
 		if err != nil {
-			handleContextError(&pipeline.options, 4, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
 		val5, err := pipeline.decoder5(r, val1, val2, val3, val4)
 		if err != nil {
-			handleContextError(&pipeline.options, 5, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 5, err).Respond(w, r)
 			return
 		}
 
 		// Decode sixth context
 		val6, err := pipeline.decoder6(r, val1, val2, val3, val4, val5)
 		if err != nil {
-			handleContextError(&pipeline.options, 6, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 6, err).Respond(w, r)
 			return
 		}
 
 		// Decode seventh context
 		val7, err := pipeline.decoder7(r, val1, val2, val3, val4, val5, val6)
 		if err != nil {
-			handleContextError(&pipeline.options, 7, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 7, err).Respond(w, r)
 			return
 		}
 
@@ -1092,56 +1092,56 @@ func HandlePipelineWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any](
 		// Decode first context
 		val1, err := pipeline.decoder1(r)
 		if err != nil {
-			handleContextError(&pipeline.options, 1, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 1, err).Respond(w, r)
 			return
 		}
 
 		// Decode second context
 		val2, err := pipeline.decoder2(r, val1)
 		if err != nil {
-			handleContextError(&pipeline.options, 2, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 2, err).Respond(w, r)
 			return
 		}
 
 		// Decode third context
 		val3, err := pipeline.decoder3(r, val1, val2)
 		if err != nil {
-			handleContextError(&pipeline.options, 3, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 3, err).Respond(w, r)
 			return
 		}
 
 		// Decode fourth context
 		val4, err := pipeline.decoder4(r, val1, val2, val3)
 		if err != nil {
-			handleContextError(&pipeline.options, 4, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 4, err).Respond(w, r)
 			return
 		}
 
 		// Decode fifth context
 		val5, err := pipeline.decoder5(r, val1, val2, val3, val4)
 		if err != nil {
-			handleContextError(&pipeline.options, 5, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 5, err).Respond(w, r)
 			return
 		}
 
 		// Decode sixth context
 		val6, err := pipeline.decoder6(r, val1, val2, val3, val4, val5)
 		if err != nil {
-			handleContextError(&pipeline.options, 6, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 6, err).Respond(w, r)
 			return
 		}
 
 		// Decode seventh context
 		val7, err := pipeline.decoder7(r, val1, val2, val3, val4, val5, val6)
 		if err != nil {
-			handleContextError(&pipeline.options, 7, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 7, err).Respond(w, r)
 			return
 		}
 
 		// Decode eighth context
 		val8, err := pipeline.decoder8(r, val1, val2, val3, val4, val5, val6, val7)
 		if err != nil {
-			handleContextError(&pipeline.options, 8, err).Respond(w, r)
+			handleDecodeError(&pipeline.options, 8, err).Respond(w, r)
 			return
 		}
 

@@ -27,9 +27,9 @@ We propose extending the pipeline types to include optional error handlers using
 ```go
 // PipelineOptions holds configurable options for pipelines
 type PipelineOptions struct {
-    // ContextErrorHandler handles errors from context decoders
-    ContextErrorHandler func(stage int, err error) Responder
-    
+    // DecodeErrorHandler handles errors from context decoders
+    DecodeErrorHandler func(stage int, err error) Responder
+
     // InputErrorHandler handles errors from input decoders
     InputErrorHandler func(err error) Responder
 }
@@ -54,20 +54,20 @@ func NewPipeline1[C any](
     if opts != nil {
         options = *opts
     }
-    
+
     // If options handlers are not set, use defaults
-    if options.ContextErrorHandler == nil {
-        options.ContextErrorHandler = func(stage int, err error) Responder {
+    if options.DecodeErrorHandler == nil {
+        options.DecodeErrorHandler = func(stage int, err error) Responder {
             return errorResponder(fmt.Errorf("stage %d context error: %w", stage, err))
         }
     }
-    
+
     if options.InputErrorHandler == nil {
         options.InputErrorHandler = func(err error) Responder {
             return errorResponder(fmt.Errorf("input error: %w", err))
         }
     }
-    
+
     return Pipeline1[C]{
         decoder1: decoder,
         options: options,
@@ -78,10 +78,10 @@ func NewPipeline1[C any](
 #### Option Provider Functions
 
 ```go
-// WithContextErrorHandler returns an option that sets a custom context error handler
-func WithContextErrorHandler(handler func(stage int, err error) Responder) func(*PipelineOptions) {
+// WithDecodeErrorHandler returns an option that sets a custom context error handler
+func WithDecodeErrorHandler(handler func(stage int, err error) Responder) func(*PipelineOptions) {
     return func(opts *PipelineOptions) {
-        opts.ContextErrorHandler = handler
+        opts.DecodeErrorHandler = handler
     }
 }
 
@@ -105,7 +105,7 @@ func HandlePipelineWithInput1[C, T any](
         // Decode context
         val, err := p.decoder1(r)
         if err != nil {
-            p.options.ContextErrorHandler(1, err).Respond(w, r)
+            p.options.DecodeErrorHandler(1, err).Respond(w, r)
             return
         }
 
@@ -132,7 +132,7 @@ func HandlePipelineWithInput1[C, T any](
 ```go
 // Create a pipeline with custom error handling
 options := &httphandler.PipelineOptions{}
-httphandler.WithContextErrorHandler(func(stage int, err error) httphandler.Responder {
+httphandler.WithDecodeErrorHandler(func(stage int, err error) httphandler.Responder {
     // Custom tenant-specific error handling
     if strings.Contains(err.Error(), "tenant not found") {
         return jsonresp.Error(nil, "Invalid tenant", http.StatusUnauthorized)
