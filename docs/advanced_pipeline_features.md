@@ -44,33 +44,19 @@ type Pipeline1[C any] struct {
 #### Builder Functions with Options
 
 ```go
-// NewPipeline1 with options support
+// NewPipeline1 with functional options support
 func NewPipeline1[C any](
     decoder func(r *http.Request) (C, error),
-    opts *PipelineOptions,
+    options ...func(*PipelineOptions),
 ) Pipeline1[C] {
-    // Set default options if opts is nil
-    options := PipelineOptions{}
-    if opts != nil {
-        options = *opts
-    }
-
-    // If options handlers are not set, use defaults
-    if options.DecodeErrorHandler == nil {
-        options.DecodeErrorHandler = func(stage int, err error) Responder {
-            return errorResponder(fmt.Errorf("stage %d context error: %w", stage, err))
-        }
-    }
-
-    if options.InputErrorHandler == nil {
-        options.InputErrorHandler = func(err error) Responder {
-            return errorResponder(fmt.Errorf("input error: %w", err))
-        }
+    opts := defaultOptions()
+    for _, option := range options {
+        option(&opts)
     }
 
     return Pipeline1[C]{
         decoder1: decoder,
-        options: options,
+        options: opts,
     }
 }
 ```
@@ -131,28 +117,26 @@ func HandlePipelineWithInput1[C, T any](
 
 ```go
 // Create a pipeline with custom error handling
-options := &httphandler.PipelineOptions{}
-httphandler.WithDecodeErrorHandler(func(stage int, err error) httphandler.Responder {
-    // Custom tenant-specific error handling
-    if strings.Contains(err.Error(), "tenant not found") {
-        return jsonresp.Error(nil, "Invalid tenant", http.StatusUnauthorized)
-    }
-    return jsonresp.Error(nil, err.Error(), http.StatusBadRequest)
-})(options)
-
 tenantPipeline := httphandler.NewPipeline1(
     DecodeTenant,
-    options
+    httphandler.WithDecodeErrorHandler(func(stage int, err error) httphandler.Responder {
+        // Custom tenant-specific error handling
+        if strings.Contains(err.Error(), "tenant not found") {
+            return jsonresp.Error(nil, "Invalid tenant", http.StatusUnauthorized)
+        }
+        return jsonresp.Error(nil, err.Error(), http.StatusBadRequest)
+    }),
 )
 ```
 
 ### Benefits of This Approach
 
-1. **Non-breaking changes**: Existing code will continue to work with default error handlers
+1. **Cleaner API**: No need to pass `nil` when no options are required
 2. **Flexibility**: Allows for different error handling strategies at different pipeline stages
-3. **Extensibility**: The options pattern can be extended for other customizations
+3. **Extensibility**: The functional options pattern can be extended for other customizations
 4. **Type safety**: Maintains the type safety benefits of the current implementation
-5. **Simplicity**: Users only need to provide custom handlers when they want to override defaults
+5. **Simplicity**: Users only need to provide options when they want to override defaults
+6. **Composable**: Multiple options can be combined in a single function call
 
 ## Future Considerations
 

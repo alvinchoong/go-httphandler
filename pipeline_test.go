@@ -61,14 +61,14 @@ func TestPipelineCompilation(t *testing.T) {
 	}
 
 	// Create test pipeline chains - pass all decoder functions directly
-	p1 := NewPipeline1(decoder1, nil)
-	p2 := NewPipeline2(decoder1, decoder2, nil)
-	p3 := NewPipeline3(decoder1, decoder2, decoder3, nil)
-	p4 := NewPipeline4(decoder1, decoder2, decoder3, decoder4, nil)
-	p5 := NewPipeline5(decoder1, decoder2, decoder3, decoder4, decoder5, nil)
-	p6 := NewPipeline6(decoder1, decoder2, decoder3, decoder4, decoder5, decoder6, nil)
-	p7 := NewPipeline7(decoder1, decoder2, decoder3, decoder4, decoder5, decoder6, decoder7, nil)
-	p8 := NewPipeline8(decoder1, decoder2, decoder3, decoder4, decoder5, decoder6, decoder7, decoder8, nil)
+	p1 := NewPipeline1(decoder1)
+	p2 := NewPipeline2(decoder1, decoder2)
+	p3 := NewPipeline3(decoder1, decoder2, decoder3)
+	p4 := NewPipeline4(decoder1, decoder2, decoder3, decoder4)
+	p5 := NewPipeline5(decoder1, decoder2, decoder3, decoder4, decoder5)
+	p6 := NewPipeline6(decoder1, decoder2, decoder3, decoder4, decoder5, decoder6)
+	p7 := NewPipeline7(decoder1, decoder2, decoder3, decoder4, decoder5, decoder6, decoder7)
+	p8 := NewPipeline8(decoder1, decoder2, decoder3, decoder4, decoder5, decoder6, decoder7, decoder8)
 
 	// Create handlers (just verifying compilation)
 	_ = HandlePipelineWithInput1(p1, inputDecoder, func(ctx context.Context, ctx1 TestContext1, input TestInput) Responder {
@@ -137,7 +137,7 @@ func TestPipelineExecution(t *testing.T) {
 	}
 
 	// Create pipeline directly passing all decoders
-	actionPipeline := NewPipeline2(userDecoder, actionDecoder, nil)
+	actionPipeline := NewPipeline2(userDecoder, actionDecoder)
 
 	// Create handler
 	handler := HandlePipelineWithInput2(actionPipeline, decodeLoginInput,
@@ -177,12 +177,11 @@ func TestPipelineErrorHandling(t *testing.T) {
 	}
 
 	// Create pipeline with failing decoder
-	pipeline := NewPipeline1(failingDecoder, nil)
+	pipeline := NewPipeline1(failingDecoder)
 
 	// Create handler
 	handler := HandlePipelineWithInput1(pipeline, func(r *http.Request) (struct{}, error) {
-		return struct{}{}, nil
-	}, func(ctx context.Context, val struct{}, input struct{}) Responder {
+		return struct{}{}, nil	}, func(ctx context.Context, val struct{}, input struct{}) Responder {
 		return &testResponder{message: "This should not be called"}
 	})
 
@@ -325,7 +324,7 @@ func TestPipelineDeepChaining(t *testing.T) {
 	}
 
 	// Create the deepest pipeline directly with all decoders (not using previous pipeline variables)
-	p8 := NewPipeline8(decoder1, decoder2, decoder3, decoder4, decoder5, decoder6, decoder7, decoder8, nil)
+	p8 := NewPipeline8(decoder1, decoder2, decoder3, decoder4, decoder5, decoder6, decoder7, decoder8)
 
 	// Create handler with all 8 contexts
 	handler := HandlePipelineWithInput8(p8, inputDecoder,
@@ -373,7 +372,7 @@ func TestHandlePipelineWithInputStage(t *testing.T) {
 	}
 
 	// Create pipelines with just one context
-	pipeline1 := NewPipeline1(contextDecoder, nil)
+	pipeline1 := NewPipeline1(contextDecoder)
 
 	// Create a test handler function that verifies both context and input values
 	handlerCalled := false
@@ -432,7 +431,7 @@ func TestHandlePipelineWithComplexInputStage(t *testing.T) {
 	}
 
 	// Create a pipeline with two contexts directly
-	pipeline2 := NewPipeline2(contextDecoder1, contextDecoder2, nil)
+	pipeline2 := NewPipeline2(contextDecoder1, contextDecoder2)
 
 	// Create a test handler function
 	handlerCalled := false

@@ -86,25 +86,26 @@ type Pipeline3[C1, C2, C3 any] struct {
 // Start a pipeline with one context type
 func NewPipeline1[C any](
     decoder func(r *http.Request) (C, error),
-    opts *PipelineOptions,
+    options ...func(*PipelineOptions),
 ) Pipeline1[C] {
     // Implementation
 }
 
-// Extend a pipeline with a second context decoder
+// Create a pipeline with two context types
 func NewPipeline2[C1, C2 any](
-    p Pipeline1[C1],
-    decoder func(r *http.Request, val1 C1) (C2, error),
-    opts *PipelineOptions,
+    decoder1 func(r *http.Request) (C1, error),
+    decoder2 func(r *http.Request, val1 C1) (C2, error),
+    options ...func(*PipelineOptions),
 ) Pipeline2[C1, C2] {
     // Implementation
 }
 
-// Extend a pipeline with a third context decoder
+// Create a pipeline with three context types
 func NewPipeline3[C1, C2, C3 any](
-    p Pipeline2[C1, C2],
-    decoder func(r *http.Request, val1 C1, val2 C2) (C3, error),
-    opts *PipelineOptions,
+    decoder1 func(r *http.Request) (C1, error),
+    decoder2 func(r *http.Request, val1 C1) (C2, error),
+    decoder3 func(r *http.Request, val1 C1, val2 C2) (C3, error),
+    options ...func(*PipelineOptions),
 ) Pipeline3[C1, C2, C3] {
     // Implementation
 }
@@ -154,8 +155,8 @@ func DecodeThing(r *http.Request, tenant Tenant, user User) (Thing, error) { /* 
 
 // Create pipeline stages
 tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
-userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
-thingPipeline := httphandler.NewPipeline3(userPipeline, DecodeThing)
+userPipeline := httphandler.NewPipeline2(DecodeTenant, DecodeUser)
+thingPipeline := httphandler.NewPipeline3(DecodeTenant, DecodeUser, DecodeThing)
 
 // Using the pipelines with different handler types
 router.HandleFunc("/login", httphandler.HandleWithInput1(
@@ -229,21 +230,35 @@ Each pipeline type stores its decoder function and a reference to the previous p
 We've implemented free functions for creating and extending pipelines:
 
 ```go
-// WithContext starts a pipeline with one context type
-func NewPipeline1[C any](decoder func(r *http.Request) (C, error)) Pipeline1[C] {
+// NewPipeline1 starts a pipeline with one context type
+func NewPipeline1[C any](
+    decoder func(r *http.Request) (C, error),
+    options ...func(*PipelineOptions),
+) Pipeline1[C] {
+    opts := defaultOptions()
+    for _, option := range options {
+        option(&opts)
+    }
     return Pipeline1[C]{
-        decoder: decoder,
+        decoder1: decoder,
+        options: opts,
     }
 }
 
-// WithContext2 extends a Pipeline1 with a second context decoder
+// NewPipeline2 creates a pipeline with two context types
 func NewPipeline2[C1, C2 any](
-    p Pipeline1[C1],
-    decoder func(r *http.Request, c1 C1) (C2, error),
+    decoder1 func(r *http.Request) (C1, error),
+    decoder2 func(r *http.Request, c1 C1) (C2, error),
+    options ...func(*PipelineOptions),
 ) Pipeline2[C1, C2] {
+    opts := defaultOptions()
+    for _, option := range options {
+        option(&opts)
+    }
     return Pipeline2[C1, C2]{
-        p1:      p,
-        decoder: decoder,
+        decoder1: decoder1,
+        decoder2: decoder2,
+        options: opts,
     }
 }
 ```
@@ -365,9 +380,9 @@ func TestPipelineCompilation(t *testing.T) {
     }
     
     // Create pipelines with different depth
-    p1 := NewPipeline1(decoder1, nil)
-    p2 := NewPipeline2(p1, decoder2, nil)
-    p3 := NewPipeline3(p2, decoder3, nil)
+    p1 := NewPipeline1(decoder1)
+    p2 := NewPipeline2(decoder1, decoder2)
+    p3 := NewPipeline3(decoder1, decoder2, decoder3)
     
     // Create handlers with various context depths
     _ = HandlePipelineWithInput1(p1, inputDecoder, func(ctx context.Context, val1 TestContext1, input TestInput) Responder {
@@ -606,8 +621,8 @@ These standard decoders can be combined with the pipeline architecture to create
 
 ```go
 // Create pipeline stages
-tenantPipeline := httphandler.NewPipeline1(DecodeTenant, nil)
-userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser, nil)
+tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
+userPipeline := httphandler.NewPipeline2(DecodeTenant, DecodeUser)
 
 // Route that requires tenant and user authentication, and extracts an ID from path parameters
 router.HandleFunc("GET /items/{id}", httphandler.HandlePipelineWithInput2(

@@ -99,15 +99,15 @@ type Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any] struct {
 // NewPipeline1 creates a pipeline with one context type
 func NewPipeline1[C any](
 	decoder func(r *http.Request) (C, error),
-	opts *PipelineOptions,
+	options ...func(*PipelineOptions),
 ) Pipeline1[C] {
-	options := PipelineOptions{}
-	if opts != nil {
-		options = *opts
+	opts := defaultOptions()
+	for _, option := range options {
+		option(&opts)
 	}
 	return Pipeline1[C]{
 		decoder1: decoder,
-		options:  options,
+		options:  opts,
 	}
 }
 
@@ -115,16 +115,16 @@ func NewPipeline1[C any](
 func NewPipeline2[C1, C2 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
-	opts *PipelineOptions,
+	options ...func(*PipelineOptions),
 ) Pipeline2[C1, C2] {
-	options := PipelineOptions{}
-	if opts != nil {
-		options = *opts
+	opts := defaultOptions()
+	for _, option := range options {
+		option(&opts)
 	}
 	return Pipeline2[C1, C2]{
 		decoder1: decoder1,
 		decoder2: decoder2,
-		options:  options,
+		options:  opts,
 	}
 }
 
@@ -133,17 +133,17 @@ func NewPipeline3[C1, C2, C3 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
 	decoder3 func(r *http.Request, c1 C1, c2 C2) (C3, error),
-	opts *PipelineOptions,
+	options ...func(*PipelineOptions),
 ) Pipeline3[C1, C2, C3] {
-	options := PipelineOptions{}
-	if opts != nil {
-		options = *opts
+	opts := defaultOptions()
+	for _, option := range options {
+		option(&opts)
 	}
 	return Pipeline3[C1, C2, C3]{
 		decoder1: decoder1,
 		decoder2: decoder2,
 		decoder3: decoder3,
-		options:  options,
+		options:  opts,
 	}
 }
 
@@ -153,18 +153,18 @@ func NewPipeline4[C1, C2, C3, C4 any](
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
 	decoder3 func(r *http.Request, c1 C1, c2 C2) (C3, error),
 	decoder4 func(r *http.Request, c1 C1, c2 C2, c3 C3) (C4, error),
-	opts *PipelineOptions,
+	options ...func(*PipelineOptions),
 ) Pipeline4[C1, C2, C3, C4] {
-	options := PipelineOptions{}
-	if opts != nil {
-		options = *opts
+	opts := defaultOptions()
+	for _, option := range options {
+		option(&opts)
 	}
 	return Pipeline4[C1, C2, C3, C4]{
 		decoder1: decoder1,
 		decoder2: decoder2,
 		decoder3: decoder3,
 		decoder4: decoder4,
-		options:  options,
+		options:  opts,
 	}
 }
 
@@ -175,11 +175,11 @@ func NewPipeline5[C1, C2, C3, C4, C5 any](
 	decoder3 func(r *http.Request, c1 C1, c2 C2) (C3, error),
 	decoder4 func(r *http.Request, c1 C1, c2 C2, c3 C3) (C4, error),
 	decoder5 func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4) (C5, error),
-	opts *PipelineOptions,
+	options ...func(*PipelineOptions),
 ) Pipeline5[C1, C2, C3, C4, C5] {
-	options := PipelineOptions{}
-	if opts != nil {
-		options = *opts
+	opts := defaultOptions()
+	for _, option := range options {
+		option(&opts)
 	}
 	return Pipeline5[C1, C2, C3, C4, C5]{
 		decoder1: decoder1,
@@ -187,7 +187,7 @@ func NewPipeline5[C1, C2, C3, C4, C5 any](
 		decoder3: decoder3,
 		decoder4: decoder4,
 		decoder5: decoder5,
-		options:  options,
+		options:  opts,
 	}
 }
 
@@ -199,11 +199,11 @@ func NewPipeline6[C1, C2, C3, C4, C5, C6 any](
 	decoder4 func(r *http.Request, c1 C1, c2 C2, c3 C3) (C4, error),
 	decoder5 func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4) (C5, error),
 	decoder6 func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4, c5 C5) (C6, error),
-	opts *PipelineOptions,
+	options ...func(*PipelineOptions),
 ) Pipeline6[C1, C2, C3, C4, C5, C6] {
-	options := PipelineOptions{}
-	if opts != nil {
-		options = *opts
+	opts := defaultOptions()
+	for _, option := range options {
+		option(&opts)
 	}
 	return Pipeline6[C1, C2, C3, C4, C5, C6]{
 		decoder1: decoder1,
@@ -212,7 +212,7 @@ func NewPipeline6[C1, C2, C3, C4, C5, C6 any](
 		decoder4: decoder4,
 		decoder5: decoder5,
 		decoder6: decoder6,
-		options:  options,
+		options:  opts,
 	}
 }
 
@@ -225,11 +225,11 @@ func NewPipeline7[C1, C2, C3, C4, C5, C6, C7 any](
 	decoder5 func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4) (C5, error),
 	decoder6 func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4, c5 C5) (C6, error),
 	decoder7 func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4, c5 C5, c6 C6) (C7, error),
-	opts *PipelineOptions,
+	options ...func(*PipelineOptions),
 ) Pipeline7[C1, C2, C3, C4, C5, C6, C7] {
-	options := PipelineOptions{}
-	if opts != nil {
-		options = *opts
+	opts := defaultOptions()
+	for _, option := range options {
+		option(&opts)
 	}
 	return Pipeline7[C1, C2, C3, C4, C5, C6, C7]{
 		decoder1: decoder1,
@@ -239,7 +239,7 @@ func NewPipeline7[C1, C2, C3, C4, C5, C6, C7 any](
 		decoder5: decoder5,
 		decoder6: decoder6,
 		decoder7: decoder7,
-		options:  options,
+		options:  opts,
 	}
 }
 
@@ -253,11 +253,11 @@ func NewPipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 	decoder6 func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4, c5 C5) (C6, error),
 	decoder7 func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4, c5 C5, c6 C6) (C7, error),
 	decoder8 func(r *http.Request, c1 C1, c2 C2, c3 C3, c4 C4, c5 C5, c6 C6, c7 C7) (C8, error),
-	opts *PipelineOptions,
+	options ...func(*PipelineOptions),
 ) Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8] {
-	options := PipelineOptions{}
-	if opts != nil {
-		options = *opts
+	opts := defaultOptions()
+	for _, option := range options {
+		option(&opts)
 	}
 	return Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8]{
 		decoder1: decoder1,
@@ -268,7 +268,7 @@ func NewPipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 		decoder6: decoder6,
 		decoder7: decoder7,
 		decoder8: decoder8,
-		options:  options,
+		options:  opts,
 	}
 }
 
