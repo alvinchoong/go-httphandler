@@ -269,9 +269,6 @@ router.HandleFunc("PUT /products/{id}", httphandler.HandlePipelineWithInput3(
 - **Separation of Concerns**: Validate request context before handler execution
 
 For a complete example of the Request Pipeline Architecture, see [examples/pipeline/main.go](examples/pipeline/main.go) and its [documentation](examples/pipeline/README.md).
-    return NewCSVResponse(records, "users.csv")
-}
-```
 
 ## Benchmarks
 
