@@ -421,7 +421,7 @@ func HandlePipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 
 // ========== Input as pipeline stage functions ==========
 
-// NewPipelineWithInput1 creates a pipeline with one context type and input
+// NewPipelineWithInput1 creates a pipeline with one decoder type and input
 func NewPipelineWithInput1[C, T any](
 	p Pipeline1[C],
 	inputDecoder func(r *http.Request) (T, error),
@@ -442,7 +442,7 @@ func NewPipelineWithInput1[C, T any](
 	}
 }
 
-// NewPipelineWithInput2 creates a pipeline with two context types and input
+// NewPipelineWithInput2 creates a pipeline with two decoder types and input
 func NewPipelineWithInput2[C1, C2, T any](
 	p Pipeline2[C1, C2],
 	inputDecoder func(r *http.Request) (T, error),
@@ -464,7 +464,7 @@ func NewPipelineWithInput2[C1, C2, T any](
 	}
 }
 
-// NewPipelineWithInput3 creates a pipeline with three context types and input
+// NewPipelineWithInput3 creates a pipeline with three decoder types and input
 func NewPipelineWithInput3[C1, C2, C3, T any](
 	p Pipeline3[C1, C2, C3],
 	inputDecoder func(r *http.Request) (T, error),
@@ -487,7 +487,7 @@ func NewPipelineWithInput3[C1, C2, C3, T any](
 	}
 }
 
-// NewPipelineWithInput4 creates a pipeline with four context types and input
+// NewPipelineWithInput4 creates a pipeline with four decoder types and input
 func NewPipelineWithInput4[C1, C2, C3, C4, T any](
 	p Pipeline4[C1, C2, C3, C4],
 	inputDecoder func(r *http.Request) (T, error),
@@ -511,7 +511,7 @@ func NewPipelineWithInput4[C1, C2, C3, C4, T any](
 	}
 }
 
-// NewPipelineWithInput5 creates a pipeline with five context types and input
+// NewPipelineWithInput5 creates a pipeline with five decoder types and input
 func NewPipelineWithInput5[C1, C2, C3, C4, C5, T any](
 	p Pipeline5[C1, C2, C3, C4, C5],
 	inputDecoder func(r *http.Request) (T, error),
@@ -536,7 +536,7 @@ func NewPipelineWithInput5[C1, C2, C3, C4, C5, T any](
 	}
 }
 
-// NewPipelineWithInput6 creates a pipeline with six context types and input
+// NewPipelineWithInput6 creates a pipeline with six decoder types and input
 func NewPipelineWithInput6[C1, C2, C3, C4, C5, C6, T any](
 	p Pipeline6[C1, C2, C3, C4, C5, C6],
 	inputDecoder func(r *http.Request) (T, error),
@@ -562,7 +562,7 @@ func NewPipelineWithInput6[C1, C2, C3, C4, C5, C6, T any](
 	}
 }
 
-// NewPipelineWithInput7 creates a pipeline with seven context types and input
+// NewPipelineWithInput7 creates a pipeline with seven decoder types and input
 func NewPipelineWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 	p Pipeline7[C1, C2, C3, C4, C5, C6, C7],
 	inputDecoder func(r *http.Request) (T, error),
@@ -589,7 +589,7 @@ func NewPipelineWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 	}
 }
 
-// NewPipelineWithInput8 creates a pipeline with eight context types and input
+// NewPipelineWithInput8 creates a pipeline with eight decoder types and input
 func NewPipelineWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any](
 	p Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8],
 	inputDecoder func(r *http.Request) (T, error),

@@ -17,6 +17,7 @@ This document outlines the design and implementation plan for adding a request p
 ### Pipeline Stages
 
 Each pipeline stage is responsible for:
+
 1. Extracting and validating a specific piece of information from the request
 2. Accumulating that information into a context
 3. Optionally responding early (e.g., for authentication failures)
@@ -27,12 +28,14 @@ Each pipeline stage is responsible for:
 Decoders are functions that extract and validate information from HTTP requests. They come in several variants:
 
 1. **Initial Decoders**: Take only the request and return a specific type
+
    ```go
    // Generic initial decoder
    type ContextDecoder[C any] func(r *http.Request) (C, error)
    ```
 
 2. **Contextual Decoders**: Take the request and context from previous stages
+
    ```go
    // Generic contextual decoder with one previous context
    type ContextualDecoder[C1, C2 any] func(r *http.Request, val1 C1) (C2, error)
@@ -44,6 +47,7 @@ Decoders are functions that extract and validate information from HTTP requests.
    ```
 
 3. **Input Decoders**: Extract request-specific input data
+
    ```go
    // Generic input decoder
    type InputDecoder[T any] func(r *http.Request) (T, error)
@@ -54,20 +58,20 @@ Decoders are functions that extract and validate information from HTTP requests.
 Due to Go's constraint that methods cannot have their own type parameters, we need to use a functional approach rather than an interface-based approach. We'll define concrete types for each pipeline depth and use free functions for pipeline operations:
 
 ```go
-// Pipeline with one context type
+// Pipeline with one decoder type
 type Pipeline1[C any] struct {
     decoder1 func(r *http.Request) (C, error)
     options  PipelineOptions
 }
 
-// Pipeline with two context types
+// Pipeline with two decoder types
 type Pipeline2[C1, C2 any] struct {
     decoder1 func(r *http.Request) (C1, error)
     decoder2 func(r *http.Request, val1 C1) (C2, error)
     options  PipelineOptions
 }
 
-// Pipeline with three context types
+// Pipeline with three decoder types
 type Pipeline3[C1, C2, C3 any] struct {
     decoder1 func(r *http.Request) (C1, error)
     decoder2 func(r *http.Request, val1 C1) (C2, error)
@@ -83,7 +87,7 @@ type Pipeline3[C1, C2, C3 any] struct {
 ### Pipeline Builders
 
 ```go
-// Start a pipeline with one context type
+// Start a pipeline with one decoder type
 func NewPipeline1[C any](
     decoder func(r *http.Request) (C, error),
     options ...func(*PipelineOptions),
@@ -91,7 +95,7 @@ func NewPipeline1[C any](
     // Implementation
 }
 
-// Create a pipeline with two context types
+// Create a pipeline with two decoder types
 func NewPipeline2[C1, C2 any](
     decoder1 func(r *http.Request) (C1, error),
     decoder2 func(r *http.Request, val1 C1) (C2, error),
@@ -100,7 +104,7 @@ func NewPipeline2[C1, C2 any](
     // Implementation
 }
 
-// Create a pipeline with three context types
+// Create a pipeline with three decoder types
 func NewPipeline3[C1, C2, C3 any](
     decoder1 func(r *http.Request) (C1, error),
     decoder2 func(r *http.Request, val1 C1) (C2, error),
@@ -199,24 +203,24 @@ The implementation of the request pipeline architecture uses Go's generics to pr
 We've implemented concrete types for each pipeline depth (up to Pipeline8):
 
 ```go
-// Pipeline1 is a pipeline with one context type
+// Pipeline1 is a pipeline with one decoder type
 type Pipeline1[C any] struct {
     decoder func(r *http.Request) (C, error)
 }
 
-// Pipeline2 is a pipeline with two context types
+// Pipeline2 is a pipeline with two decoder types
 type Pipeline2[C1, C2 any] struct {
     p1      Pipeline1[C1]
     decoder func(r *http.Request, c1 C1) (C2, error)
 }
 
-// Pipeline3 is a pipeline with three context types
+// Pipeline3 is a pipeline with three decoder types
 type Pipeline3[C1, C2, C3 any] struct {
     p2      Pipeline2[C1, C2]
     decoder func(r *http.Request, c1 C1, c2 C2) (C3, error)
 }
 
-// Pipeline4 is a pipeline with four context types
+// Pipeline4 is a pipeline with four decoder types
 type Pipeline4[C1, C2, C3, C4 any] struct {
     p3      Pipeline3[C1, C2, C3]
     decoder func(r *http.Request, c1 C1, c2 C2, c3 C3) (C4, error)
@@ -230,7 +234,7 @@ Each pipeline type stores its decoder function and a reference to the previous p
 We've implemented free functions for creating and extending pipelines:
 
 ```go
-// NewPipeline1 starts a pipeline with one context type
+// NewPipeline1 starts a pipeline with one decoder type
 func NewPipeline1[C any](
     decoder func(r *http.Request) (C, error),
     options ...func(*PipelineOptions),
@@ -245,7 +249,7 @@ func NewPipeline1[C any](
     }
 }
 
-// NewPipeline2 creates a pipeline with two context types
+// NewPipeline2 creates a pipeline with two decoder types
 func NewPipeline2[C1, C2 any](
     decoder1 func(r *http.Request) (C1, error),
     decoder2 func(r *http.Request, c1 C1) (C2, error),
@@ -351,6 +355,7 @@ This ensures that errors from decoders are properly converted to HTTP responses.
 5. Test edge cases like deeply nested pipeline chains
 
 Example test file structure:
+
 ```go
 func TestPipelineCompilation(t *testing.T) {
     // This test doesn't actually run assertions - it just ensures

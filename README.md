@@ -225,13 +225,13 @@ The Request Pipeline Architecture provides a powerful way to chain HTTP request 
 ### Pipeline Types
 
 ```go
-// Create a pipeline with one context type (e.g., Tenant)
+// Create a pipeline with one decoder type (e.g., Tenant)
 tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
 
-// Add a second context type (e.g., User)
+// Add a second decoder type (e.g., User)
 userPipeline := httphandler.NewPipeline2(tenantPipeline, DecodeUser)
 
-// Add a third context type (e.g., Product)
+// Add a third decoder type (e.g., Product)
 productPipeline := httphandler.NewPipeline3(userPipeline, DecodeProduct)
 ```
 

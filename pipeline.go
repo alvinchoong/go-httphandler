@@ -18,20 +18,20 @@ type PipelineOptions struct {
 
 // ========== Flattened Pipeline Structures ==========
 
-// Pipeline1 is a pipeline with one context type
+// Pipeline1 is a pipeline with one decoder type
 type Pipeline1[C any] struct {
 	decoder1 func(r *http.Request) (C, error)
 	options  PipelineOptions
 }
 
-// Pipeline2 is a pipeline with two context types
+// Pipeline2 is a pipeline with two decoder types
 type Pipeline2[C1, C2 any] struct {
 	decoder1 func(r *http.Request) (C1, error)
 	decoder2 func(r *http.Request, c1 C1) (C2, error)
 	options  PipelineOptions
 }
 
-// Pipeline3 is a pipeline with three context types
+// Pipeline3 is a pipeline with three decoder types
 type Pipeline3[C1, C2, C3 any] struct {
 	decoder1 func(r *http.Request) (C1, error)
 	decoder2 func(r *http.Request, c1 C1) (C2, error)
@@ -39,7 +39,7 @@ type Pipeline3[C1, C2, C3 any] struct {
 	options  PipelineOptions
 }
 
-// Pipeline4 is a pipeline with four context types
+// Pipeline4 is a pipeline with four decoder types
 type Pipeline4[C1, C2, C3, C4 any] struct {
 	decoder1 func(r *http.Request) (C1, error)
 	decoder2 func(r *http.Request, c1 C1) (C2, error)
@@ -48,7 +48,7 @@ type Pipeline4[C1, C2, C3, C4 any] struct {
 	options  PipelineOptions
 }
 
-// Pipeline5 is a pipeline with five context types
+// Pipeline5 is a pipeline with five decoder types
 type Pipeline5[C1, C2, C3, C4, C5 any] struct {
 	decoder1 func(r *http.Request) (C1, error)
 	decoder2 func(r *http.Request, c1 C1) (C2, error)
@@ -58,7 +58,7 @@ type Pipeline5[C1, C2, C3, C4, C5 any] struct {
 	options  PipelineOptions
 }
 
-// Pipeline6 is a pipeline with six context types
+// Pipeline6 is a pipeline with six decoder types
 type Pipeline6[C1, C2, C3, C4, C5, C6 any] struct {
 	decoder1 func(r *http.Request) (C1, error)
 	decoder2 func(r *http.Request, c1 C1) (C2, error)
@@ -69,7 +69,7 @@ type Pipeline6[C1, C2, C3, C4, C5, C6 any] struct {
 	options  PipelineOptions
 }
 
-// Pipeline7 is a pipeline with seven context types
+// Pipeline7 is a pipeline with seven decoder types
 type Pipeline7[C1, C2, C3, C4, C5, C6, C7 any] struct {
 	decoder1 func(r *http.Request) (C1, error)
 	decoder2 func(r *http.Request, c1 C1) (C2, error)
@@ -81,7 +81,7 @@ type Pipeline7[C1, C2, C3, C4, C5, C6, C7 any] struct {
 	options  PipelineOptions
 }
 
-// Pipeline8 is a pipeline with eight context types
+// Pipeline8 is a pipeline with eight decoder types
 type Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any] struct {
 	decoder1 func(r *http.Request) (C1, error)
 	decoder2 func(r *http.Request, c1 C1) (C2, error)
@@ -96,7 +96,7 @@ type Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any] struct {
 
 // ========== Factory methods for creating pipelines ==========
 
-// NewPipeline1 creates a pipeline with one context type
+// NewPipeline1 creates a pipeline with one decoder type
 func NewPipeline1[C any](
 	decoder func(r *http.Request) (C, error),
 	options ...func(*PipelineOptions),
@@ -111,7 +111,7 @@ func NewPipeline1[C any](
 	}
 }
 
-// NewPipeline2 creates a pipeline with two context types
+// NewPipeline2 creates a pipeline with two decoder types
 func NewPipeline2[C1, C2 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
@@ -128,7 +128,7 @@ func NewPipeline2[C1, C2 any](
 	}
 }
 
-// NewPipeline3 creates a pipeline with three context types
+// NewPipeline3 creates a pipeline with three decoder types
 func NewPipeline3[C1, C2, C3 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
@@ -147,7 +147,7 @@ func NewPipeline3[C1, C2, C3 any](
 	}
 }
 
-// NewPipeline4 creates a pipeline with four context types
+// NewPipeline4 creates a pipeline with four decoder types
 func NewPipeline4[C1, C2, C3, C4 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
@@ -168,7 +168,7 @@ func NewPipeline4[C1, C2, C3, C4 any](
 	}
 }
 
-// NewPipeline5 creates a pipeline with five context types
+// NewPipeline5 creates a pipeline with five decoder types
 func NewPipeline5[C1, C2, C3, C4, C5 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
@@ -191,7 +191,7 @@ func NewPipeline5[C1, C2, C3, C4, C5 any](
 	}
 }
 
-// NewPipeline6 creates a pipeline with six context types
+// NewPipeline6 creates a pipeline with six decoder types
 func NewPipeline6[C1, C2, C3, C4, C5, C6 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
@@ -216,7 +216,7 @@ func NewPipeline6[C1, C2, C3, C4, C5, C6 any](
 	}
 }
 
-// NewPipeline7 creates a pipeline with seven context types
+// NewPipeline7 creates a pipeline with seven decoder types
 func NewPipeline7[C1, C2, C3, C4, C5, C6, C7 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
@@ -243,7 +243,7 @@ func NewPipeline7[C1, C2, C3, C4, C5, C6, C7 any](
 	}
 }
 
-// NewPipeline8 creates a pipeline with eight context types
+// NewPipeline8 creates a pipeline with eight decoder types
 func NewPipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
