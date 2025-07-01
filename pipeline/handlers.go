@@ -1,48 +1,50 @@
-package httphandler
+package pipeline
 
 import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/alvinchoong/go-httphandler"
 )
 
 // ========== Regular pipeline handlers ==========
 
 // Default error handlers when options is nil
-func handleDecodeError(options *PipelineOptions, stage int, err error) Responder {
+func handleDecodeError(options *PipelineOptions, stage int, err error) httphandler.Responder {
 	if options == nil || options.DecodeErrorHandler == nil {
 		return defaultErrorHandler(err)
 	}
 	return options.DecodeErrorHandler(stage, err)
 }
 
-func handleInputError(options *PipelineOptions, err error) Responder {
+func handleInputError(options *PipelineOptions, err error) httphandler.Responder {
 	if options == nil || options.InputErrorHandler == nil {
 		return defaultErrorHandler(err)
 	}
 	return options.InputErrorHandler(err)
 }
 
-// ResponderFunc is a function type that implements the Responder interface
+// ResponderFunc is a function type that implements the httphandler.Responder interface
 type ResponderFunc func(w http.ResponseWriter, r *http.Request)
 
-// Respond implements the Responder interface
+// Respond implements the httphandler.Responder interface
 func (f ResponderFunc) Respond(w http.ResponseWriter, r *http.Request) {
 	f(w, r)
 }
 
 // Default error handler returns a 400 Bad Request with the error message
-func defaultErrorHandler(err error) Responder {
+func defaultErrorHandler(err error) httphandler.Responder {
 	return ResponderFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf("Error: %v", err)))
 	})
 }
 
-// HandlePipeline1 creates a handler using a pipeline with one context
-func HandlePipeline1[C any](
+// Handle1 creates a handler using a pipeline with one context
+func Handle1[C any](
 	p Pipeline1[C],
-	handler func(ctx context.Context, val C) Responder,
+	handler func(ctx context.Context, val C) httphandler.Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode context
@@ -62,10 +64,10 @@ func HandlePipeline1[C any](
 	}
 }
 
-// HandlePipeline2 creates a handler using a pipeline with two contexts
-func HandlePipeline2[C1, C2 any](
+// Handle2 creates a handler using a pipeline with two contexts
+func Handle2[C1, C2 any](
 	p Pipeline2[C1, C2],
-	handler func(ctx context.Context, val1 C1, val2 C2) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2) httphandler.Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -92,10 +94,10 @@ func HandlePipeline2[C1, C2 any](
 	}
 }
 
-// HandlePipeline3 creates a handler using a pipeline with three contexts
-func HandlePipeline3[C1, C2, C3 any](
+// Handle3 creates a handler using a pipeline with three contexts
+func Handle3[C1, C2, C3 any](
 	p Pipeline3[C1, C2, C3],
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3) httphandler.Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -129,10 +131,10 @@ func HandlePipeline3[C1, C2, C3 any](
 	}
 }
 
-// HandlePipeline4 creates a handler using a pipeline with four contexts
-func HandlePipeline4[C1, C2, C3, C4 any](
+// Handle4 creates a handler using a pipeline with four contexts
+func Handle4[C1, C2, C3, C4 any](
 	p Pipeline4[C1, C2, C3, C4],
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4) httphandler.Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -173,10 +175,10 @@ func HandlePipeline4[C1, C2, C3, C4 any](
 	}
 }
 
-// HandlePipeline5 creates a handler using a pipeline with five contexts
-func HandlePipeline5[C1, C2, C3, C4, C5 any](
+// Handle5 creates a handler using a pipeline with five contexts
+func Handle5[C1, C2, C3, C4, C5 any](
 	p Pipeline5[C1, C2, C3, C4, C5],
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5) httphandler.Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -224,10 +226,10 @@ func HandlePipeline5[C1, C2, C3, C4, C5 any](
 	}
 }
 
-// HandlePipeline6 creates a handler using a pipeline with six contexts
-func HandlePipeline6[C1, C2, C3, C4, C5, C6 any](
+// Handle6 creates a handler using a pipeline with six contexts
+func Handle6[C1, C2, C3, C4, C5, C6 any](
 	p Pipeline6[C1, C2, C3, C4, C5, C6],
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6) httphandler.Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -282,10 +284,10 @@ func HandlePipeline6[C1, C2, C3, C4, C5, C6 any](
 	}
 }
 
-// HandlePipeline7 creates a handler using a pipeline with seven contexts
-func HandlePipeline7[C1, C2, C3, C4, C5, C6, C7 any](
+// Handle7 creates a handler using a pipeline with seven contexts
+func Handle7[C1, C2, C3, C4, C5, C6, C7 any](
 	p Pipeline7[C1, C2, C3, C4, C5, C6, C7],
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7) httphandler.Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -347,10 +349,10 @@ func HandlePipeline7[C1, C2, C3, C4, C5, C6, C7 any](
 	}
 }
 
-// HandlePipeline8 creates a handler using a pipeline with eight contexts
-func HandlePipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
+// Handle8 creates a handler using a pipeline with eight contexts
+func Handle8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 	p Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8],
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, val8 C8) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, val8 C8) httphandler.Responder,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode first context
@@ -703,11 +705,12 @@ type PipelineWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any] struct {
 
 // ========== Handler functions with input as final pipeline stage ==========
 
-// HandlePipelineWithInput1 creates a handler with one context and input as a pipeline stage
-func HandlePipelineWithInput1[C, T any](
+
+// Handle1WithInput creates a handler with one context and input as a pipeline stage
+func Handle1WithInput[C, T any](
 	p Pipeline1[C],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx context.Context, val C, input T) Responder,
+	handler func(ctx context.Context, val C, input T) httphandler.Responder,
 ) http.HandlerFunc {
 	pipeline := NewPipelineWithInput1(p, inputDecoder)
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -736,11 +739,11 @@ func HandlePipelineWithInput1[C, T any](
 	}
 }
 
-// HandlePipelineWithInput2 creates a handler with two contexts and input as a pipeline stage
-func HandlePipelineWithInput2[C1, C2, T any](
+// Handle2WithInput creates a handler with two contexts and input as a pipeline stage
+func Handle2WithInput[C1, C2, T any](
 	p Pipeline2[C1, C2],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx context.Context, val1 C1, val2 C2, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, input T) httphandler.Responder,
 ) http.HandlerFunc {
 	pipeline := NewPipelineWithInput2(p, inputDecoder)
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -776,11 +779,11 @@ func HandlePipelineWithInput2[C1, C2, T any](
 	}
 }
 
-// HandlePipelineWithInput3 creates a handler with three contexts and input as a pipeline stage
-func HandlePipelineWithInput3[C1, C2, C3, T any](
+// Handle3WithInput creates a handler with three contexts and input as a pipeline stage
+func Handle3WithInput[C1, C2, C3, T any](
 	p Pipeline3[C1, C2, C3],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, input T) httphandler.Responder,
 ) http.HandlerFunc {
 	pipeline := NewPipelineWithInput3(p, inputDecoder)
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -823,11 +826,11 @@ func HandlePipelineWithInput3[C1, C2, C3, T any](
 	}
 }
 
-// HandlePipelineWithInput4 creates a handler with four contexts and input as a pipeline stage
-func HandlePipelineWithInput4[C1, C2, C3, C4, T any](
+// Handle4WithInput creates a handler with four contexts and input as a pipeline stage
+func Handle4WithInput[C1, C2, C3, C4, T any](
 	p Pipeline4[C1, C2, C3, C4],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, input T) httphandler.Responder,
 ) http.HandlerFunc {
 	pipeline := NewPipelineWithInput4(p, inputDecoder)
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -877,11 +880,11 @@ func HandlePipelineWithInput4[C1, C2, C3, C4, T any](
 	}
 }
 
-// HandlePipelineWithInput5 creates a handler with five contexts and input as a pipeline stage
-func HandlePipelineWithInput5[C1, C2, C3, C4, C5, T any](
+// Handle5WithInput creates a handler with five contexts and input as a pipeline stage
+func Handle5WithInput[C1, C2, C3, C4, C5, T any](
 	p Pipeline5[C1, C2, C3, C4, C5],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, input T) httphandler.Responder,
 ) http.HandlerFunc {
 	pipeline := NewPipelineWithInput5(p, inputDecoder)
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -938,11 +941,11 @@ func HandlePipelineWithInput5[C1, C2, C3, C4, C5, T any](
 	}
 }
 
-// HandlePipelineWithInput6 creates a handler with six contexts and input as a pipeline stage
-func HandlePipelineWithInput6[C1, C2, C3, C4, C5, C6, T any](
+// Handle6WithInput creates a handler with six contexts and input as a pipeline stage
+func Handle6WithInput[C1, C2, C3, C4, C5, C6, T any](
 	p Pipeline6[C1, C2, C3, C4, C5, C6],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, input T) httphandler.Responder,
 ) http.HandlerFunc {
 	pipeline := NewPipelineWithInput6(p, inputDecoder)
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -1006,11 +1009,11 @@ func HandlePipelineWithInput6[C1, C2, C3, C4, C5, C6, T any](
 	}
 }
 
-// HandlePipelineWithInput7 creates a handler with seven contexts and input as a pipeline stage
-func HandlePipelineWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
+// Handle7WithInput creates a handler with seven contexts and input as a pipeline stage
+func Handle7WithInput[C1, C2, C3, C4, C5, C6, C7, T any](
 	p Pipeline7[C1, C2, C3, C4, C5, C6, C7],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, input T) httphandler.Responder,
 ) http.HandlerFunc {
 	pipeline := NewPipelineWithInput7(p, inputDecoder)
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -1081,11 +1084,11 @@ func HandlePipelineWithInput7[C1, C2, C3, C4, C5, C6, C7, T any](
 	}
 }
 
-// HandlePipelineWithInput8 creates a handler with eight contexts and input as a pipeline stage
-func HandlePipelineWithInput8[C1, C2, C3, C4, C5, C6, C7, C8, T any](
+// Handle8WithInput creates a handler with eight contexts and input as a pipeline stage
+func Handle8WithInput[C1, C2, C3, C4, C5, C6, C7, C8, T any](
 	p Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8],
 	inputDecoder func(r *http.Request) (T, error),
-	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, val8 C8, input T) Responder,
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, val8 C8, input T) httphandler.Responder,
 ) http.HandlerFunc {
 	pipeline := NewPipelineWithInput8(p, inputDecoder)
 	return func(w http.ResponseWriter, r *http.Request) {

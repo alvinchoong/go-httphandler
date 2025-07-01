@@ -82,7 +82,7 @@ func WithInputErrorHandler(handler func(err error) Responder) func(*PipelineOpti
 #### Updated Handler Functions
 
 ```go
-func HandlePipelineWithInput1[C, T any](
+func HandlePipeline1WithInput[C, T any](
     p Pipeline1[C],
     inputDecoder func(r *http.Request) (T, error),
     handler func(ctx context.Context, val C, input T) Responder,

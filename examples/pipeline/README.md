@@ -83,13 +83,12 @@ productPipeline := httphandler.NewPipeline3(userPipeline, DecodeProduct)
 
 ### Handler Registration
 
-Handlers are registered using the `HandlePipelineWithInput2` and `HandlePipelineWithInput3` functions, which provide accumulated context and input data:
+Handlers can be registered using pipeline methods for simple cases, or free functions when additional input decoding is needed:
 
 ```go
-router.HandleFunc("GET /products/{id}", httphandler.HandlePipelineWithInput3(
-    productPipeline,
-    func(r *http.Request) (struct{}, error) { return struct{}{}, nil },
-    func(ctx context.Context, tenant Tenant, user User, product Product, _ struct{}) httphandler.Responder {
+// Simple pipeline handler (method)
+router.HandleFunc("GET /products/{id}", productPipeline.Handle(
+    func(ctx context.Context, tenant Tenant, user User, product Product) httphandler.Responder {
         return GetProduct(tenant, user, product)
     },
 ))

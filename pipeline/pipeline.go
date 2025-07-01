@@ -1,8 +1,11 @@
-package httphandler
+package pipeline
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/alvinchoong/go-httphandler"
 )
 
 // ========== Pipeline options ==========
@@ -10,10 +13,10 @@ import (
 // PipelineOptions holds configurable options for pipelines
 type PipelineOptions struct {
 	// DecodeErrorHandler handles errors from context decoders
-	DecodeErrorHandler func(stage int, err error) Responder
+	DecodeErrorHandler func(stage int, err error) httphandler.Responder
 
 	// InputErrorHandler handles errors from input decoders
-	InputErrorHandler func(err error) Responder
+	InputErrorHandler func(err error) httphandler.Responder
 }
 
 // ========== Flattened Pipeline Structures ==========
@@ -96,8 +99,8 @@ type Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any] struct {
 
 // ========== Factory methods for creating pipelines ==========
 
-// NewPipeline1 creates a pipeline with one decoder type
-func NewPipeline1[C any](
+// New1 creates a pipeline with one decoder type
+func New1[C any](
 	decoder func(r *http.Request) (C, error),
 	options ...func(*PipelineOptions),
 ) Pipeline1[C] {
@@ -111,8 +114,8 @@ func NewPipeline1[C any](
 	}
 }
 
-// NewPipeline2 creates a pipeline with two decoder types
-func NewPipeline2[C1, C2 any](
+// New2 creates a pipeline with two decoder types
+func New2[C1, C2 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
 	options ...func(*PipelineOptions),
@@ -128,8 +131,8 @@ func NewPipeline2[C1, C2 any](
 	}
 }
 
-// NewPipeline3 creates a pipeline with three decoder types
-func NewPipeline3[C1, C2, C3 any](
+// New3 creates a pipeline with three decoder types
+func New3[C1, C2, C3 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
 	decoder3 func(r *http.Request, c1 C1, c2 C2) (C3, error),
@@ -147,8 +150,8 @@ func NewPipeline3[C1, C2, C3 any](
 	}
 }
 
-// NewPipeline4 creates a pipeline with four decoder types
-func NewPipeline4[C1, C2, C3, C4 any](
+// New4 creates a pipeline with four decoder types
+func New4[C1, C2, C3, C4 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
 	decoder3 func(r *http.Request, c1 C1, c2 C2) (C3, error),
@@ -168,8 +171,8 @@ func NewPipeline4[C1, C2, C3, C4 any](
 	}
 }
 
-// NewPipeline5 creates a pipeline with five decoder types
-func NewPipeline5[C1, C2, C3, C4, C5 any](
+// New5 creates a pipeline with five decoder types
+func New5[C1, C2, C3, C4, C5 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
 	decoder3 func(r *http.Request, c1 C1, c2 C2) (C3, error),
@@ -191,8 +194,8 @@ func NewPipeline5[C1, C2, C3, C4, C5 any](
 	}
 }
 
-// NewPipeline6 creates a pipeline with six decoder types
-func NewPipeline6[C1, C2, C3, C4, C5, C6 any](
+// New6 creates a pipeline with six decoder types
+func New6[C1, C2, C3, C4, C5, C6 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
 	decoder3 func(r *http.Request, c1 C1, c2 C2) (C3, error),
@@ -216,8 +219,8 @@ func NewPipeline6[C1, C2, C3, C4, C5, C6 any](
 	}
 }
 
-// NewPipeline7 creates a pipeline with seven decoder types
-func NewPipeline7[C1, C2, C3, C4, C5, C6, C7 any](
+// New7 creates a pipeline with seven decoder types
+func New7[C1, C2, C3, C4, C5, C6, C7 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
 	decoder3 func(r *http.Request, c1 C1, c2 C2) (C3, error),
@@ -243,8 +246,8 @@ func NewPipeline7[C1, C2, C3, C4, C5, C6, C7 any](
 	}
 }
 
-// NewPipeline8 creates a pipeline with eight decoder types
-func NewPipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
+// New8 creates a pipeline with eight decoder types
+func New8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 	decoder1 func(r *http.Request) (C1, error),
 	decoder2 func(r *http.Request, c1 C1) (C2, error),
 	decoder3 func(r *http.Request, c1 C1, c2 C2) (C3, error),
@@ -275,7 +278,7 @@ func NewPipeline8[C1, C2, C3, C4, C5, C6, C7, C8 any](
 // ========== Error handling helper ==========
 
 // errorResponder creates a Responder for decoder errors
-func errorResponder(err error) Responder {
+func errorResponder(err error) httphandler.Responder {
 	// Default to a 400 Bad Request for decode errors
 	return &errorResponse{
 		statusCode: http.StatusBadRequest,
@@ -288,24 +291,24 @@ func errorResponder(err error) Responder {
 // defaultOptions returns the default PipelineOptions
 func defaultOptions() PipelineOptions {
 	return PipelineOptions{
-		DecodeErrorHandler: func(stage int, err error) Responder {
+		DecodeErrorHandler: func(stage int, err error) httphandler.Responder {
 			return errorResponder(fmt.Errorf("context%d decode error: %w", stage, err))
 		},
-		InputErrorHandler: func(err error) Responder {
+		InputErrorHandler: func(err error) httphandler.Responder {
 			return errorResponder(fmt.Errorf("input decode error: %w", err))
 		},
 	}
 }
 
 // WithDecodeErrorHandler returns an option that sets a custom context error handler
-func WithDecodeErrorHandler(handler func(stage int, err error) Responder) func(*PipelineOptions) {
+func WithDecodeErrorHandler(handler func(stage int, err error) httphandler.Responder) func(*PipelineOptions) {
 	return func(opts *PipelineOptions) {
 		opts.DecodeErrorHandler = handler
 	}
 }
 
 // WithInputErrorHandler returns an option that sets a custom input error handler
-func WithInputErrorHandler(handler func(err error) Responder) func(*PipelineOptions) {
+func WithInputErrorHandler(handler func(err error) httphandler.Responder) func(*PipelineOptions) {
 	return func(opts *PipelineOptions) {
 		opts.InputErrorHandler = handler
 	}
@@ -329,3 +332,61 @@ func (e *errorResponse) Respond(w http.ResponseWriter, r *http.Request) {
 // ========== Handler creator imports ==========
 
 // See pipeline_handlers.go for handler implementations
+
+// ========== Pipeline Handle methods ==========
+
+// Handle creates a handler using this pipeline with no additional input decoder
+func (p Pipeline1[C]) Handle(
+	handler func(ctx context.Context, val C) httphandler.Responder,
+) http.HandlerFunc {
+	return Handle1(p, handler)
+}
+
+// Handle creates a handler using this pipeline with no additional input decoder
+func (p Pipeline2[C1, C2]) Handle(
+	handler func(ctx context.Context, val1 C1, val2 C2) httphandler.Responder,
+) http.HandlerFunc {
+	return Handle2(p, handler)
+}
+
+// Handle creates a handler using this pipeline with no additional input decoder
+func (p Pipeline3[C1, C2, C3]) Handle(
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3) httphandler.Responder,
+) http.HandlerFunc {
+	return Handle3(p, handler)
+}
+
+// Handle creates a handler using this pipeline with no additional input decoder
+func (p Pipeline4[C1, C2, C3, C4]) Handle(
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4) httphandler.Responder,
+) http.HandlerFunc {
+	return Handle4(p, handler)
+}
+
+// Handle creates a handler using this pipeline with no additional input decoder
+func (p Pipeline5[C1, C2, C3, C4, C5]) Handle(
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5) httphandler.Responder,
+) http.HandlerFunc {
+	return Handle5(p, handler)
+}
+
+// Handle creates a handler using this pipeline with no additional input decoder
+func (p Pipeline6[C1, C2, C3, C4, C5, C6]) Handle(
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6) httphandler.Responder,
+) http.HandlerFunc {
+	return Handle6(p, handler)
+}
+
+// Handle creates a handler using this pipeline with no additional input decoder
+func (p Pipeline7[C1, C2, C3, C4, C5, C6, C7]) Handle(
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7) httphandler.Responder,
+) http.HandlerFunc {
+	return Handle7(p, handler)
+}
+
+// Handle creates a handler using this pipeline with no additional input decoder
+func (p Pipeline8[C1, C2, C3, C4, C5, C6, C7, C8]) Handle(
+	handler func(ctx context.Context, val1 C1, val2 C2, val3 C3, val4 C4, val5 C5, val6 C6, val7 C7, val8 C8) httphandler.Responder,
+) http.HandlerFunc {
+	return Handle8(p, handler)
+}

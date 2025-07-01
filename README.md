@@ -238,8 +238,16 @@ productPipeline := httphandler.NewPipeline3(userPipeline, DecodeProduct)
 ### Handler Registration
 
 ```go
+// Simple pipeline handler (method)
+router.HandleFunc("GET /products/{id}", productPipeline.Handle(
+    func(ctx context.Context, tenant Tenant, user User, product Product) httphandler.Responder {
+        // Handler receives request context and decoded pipeline values
+        return GetProduct(tenant, user, product)
+    },
+))
+
 // Handler with tenant and user context plus input data
-router.HandleFunc("POST /products", httphandler.HandlePipelineWithInput2(
+router.HandleFunc("POST /products", httphandler.HandlePipeline2WithInput(
     userPipeline,
     DecodeProductInput,
     func(ctx context.Context, tenant Tenant, user User, input ProductInput) httphandler.Responder {
@@ -250,7 +258,7 @@ router.HandleFunc("POST /products", httphandler.HandlePipelineWithInput2(
 ))
 
 // Handler with tenant, user, and product context plus input data
-router.HandleFunc("PUT /products/{id}", httphandler.HandlePipelineWithInput3(
+router.HandleFunc("PUT /products/{id}", httphandler.HandlePipeline3WithInput(
     productPipeline,
     DecodeProductInput,
     func(ctx context.Context, tenant Tenant, user User, product Product, input ProductInput) httphandler.Responder {

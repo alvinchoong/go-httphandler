@@ -10,6 +10,7 @@ import (
 
 	"github.com/alvinchoong/go-httphandler"
 	"github.com/alvinchoong/go-httphandler/jsonresp"
+	"github.com/alvinchoong/go-httphandler/pipeline"
 )
 
 // ========== Domain Types ==========
@@ -227,32 +228,40 @@ func UpdateProduct(tenant Tenant, user User, product Product, input ProductInput
 func main() {
 	// Create pipeline stages with the new flattened structure
 	// No need to pass options when default error handling is sufficient
-	userPipeline := httphandler.NewPipeline2(DecodeTenant, DecodeUser)
-	productPipeline := httphandler.NewPipeline3(DecodeTenant, DecodeUser, DecodeProduct)
+	tenantPipeline := pipeline.New1(DecodeTenant)
+	userPipeline := pipeline.New2(DecodeTenant, DecodeUser)
+	productPipeline := pipeline.New3(DecodeTenant, DecodeUser, DecodeProduct)
 
 	// Set up router
 	router := http.NewServeMux()
 
+	// Example: Simple tenant info endpoint using Handle() method
+	// This handler only needs the tenant context, no *http.Request needed!
+	router.HandleFunc("GET /tenant", tenantPipeline.Handle(
+		func(ctx context.Context, tenant Tenant) httphandler.Responder {
+			return jsonresp.Success[Response](&Response{
+				Tenant:  tenant.Name,
+				Message: fmt.Sprintf("Welcome to %s", tenant.Name),
+			})
+		},
+	))
+
 	// Route: List products (requires tenant and user)
-	router.HandleFunc("GET /products", httphandler.HandlePipelineWithInput2(
-		userPipeline,
-		func(r *http.Request) (struct{}, error) { return struct{}{}, nil },
-		func(ctx context.Context, tenant Tenant, user User, _ struct{}) httphandler.Responder {
+	router.HandleFunc("GET /products", userPipeline.Handle(
+		func(ctx context.Context, tenant Tenant, user User) httphandler.Responder {
 			return ListProducts(tenant, user)
 		},
 	))
 
 	// Route: Get product (requires tenant, user, and product)
-	router.HandleFunc("GET /products/{id}", httphandler.HandlePipelineWithInput3(
-		productPipeline,
-		func(r *http.Request) (struct{}, error) { return struct{}{}, nil },
-		func(ctx context.Context, tenant Tenant, user User, product Product, _ struct{}) httphandler.Responder {
+	router.HandleFunc("GET /products/{id}", productPipeline.Handle(
+		func(ctx context.Context, tenant Tenant, user User, product Product) httphandler.Responder {
 			return GetProduct(tenant, user, product)
 		},
 	))
 
 	// Route: Create product (requires tenant, user, and input)
-	router.HandleFunc("POST /products", httphandler.HandlePipelineWithInput2(
+	router.HandleFunc("POST /products", pipeline.Handle2WithInput(
 		userPipeline,
 		DecodeProductInput,
 		func(ctx context.Context, tenant Tenant, user User, input ProductInput) httphandler.Responder {
@@ -261,7 +270,7 @@ func main() {
 	))
 
 	// Route: Update product (requires tenant, user, product, and input)
-	router.HandleFunc("PUT /products/{id}", httphandler.HandlePipelineWithInput3(
+	router.HandleFunc("PUT /products/{id}", pipeline.Handle3WithInput(
 		productPipeline,
 		DecodeProductInput,
 		func(ctx context.Context, tenant Tenant, user User, product Product, input ProductInput) httphandler.Responder {
@@ -275,6 +284,8 @@ func main() {
 	slog.Info("To test the API, use these headers:")
 	slog.Info("X-Tenant-ID: t1 or t2")
 	slog.Info("Authorization: Bearer u1 or Bearer u2 or Bearer u3")
+	slog.Info("")
+	slog.Info("Example: GET /tenant (only needs X-Tenant-ID header, uses pipeline.Handle())")
 	if err := http.ListenAndServe(port, router); err != nil {
 		slog.Error("Server failed to start", "error", err)
 	}

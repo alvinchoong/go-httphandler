@@ -121,7 +121,7 @@ func NewPipeline3[C1, C2, C3 any](
 
 ```go
 // Create a handler with one context and input
-func HandlePipelineWithInput1[C, T any](
+func HandlePipeline1WithInput[C, T any](
     p Pipeline1[C],
     inputDecoder func(r *http.Request) (T, error),
     handler func(ctx context.Context, val C, input T) Responder,
@@ -130,7 +130,7 @@ func HandlePipelineWithInput1[C, T any](
 }
 
 // Create a handler with two contexts and input
-func HandlePipelineWithInput2[C1, C2, T any](
+func HandlePipeline2WithInput[C1, C2, T any](
     p Pipeline2[C1, C2],
     inputDecoder func(r *http.Request) (T, error),
     handler func(ctx context.Context, val1 C1, val2 C2, input T) Responder,
@@ -274,8 +274,8 @@ And similar functions for WithContext3 and WithContext4. These functions make th
 We've implemented functions to create HTTP handlers from pipelines:
 
 ```go
-// HandlePipelineWithInput1 creates a handler with one context and input
-func HandlePipelineWithInput1[C, T any](
+// HandlePipeline1WithInput creates a handler with one context and input
+func HandlePipeline1WithInput[C, T any](
     p Pipeline1[C],
     inputDecoder func(r *http.Request) (T, error),
     handler func(ctx context.Context, val C, input T) Responder,
@@ -390,15 +390,15 @@ func TestPipelineCompilation(t *testing.T) {
     p3 := NewPipeline3(decoder1, decoder2, decoder3)
     
     // Create handlers with various context depths
-    _ = HandlePipelineWithInput1(p1, inputDecoder, func(ctx context.Context, val1 TestContext1, input TestInput) Responder {
+    _ = HandlePipeline1WithInput(p1, inputDecoder, func(ctx context.Context, val1 TestContext1, input TestInput) Responder {
         return nil // Stub implementation
     })
     
-    _ = HandlePipelineWithInput2(p2, inputDecoder, func(ctx context.Context, val1 TestContext1, val2 TestContext2, input TestInput) Responder {
+    _ = HandlePipeline2WithInput(p2, inputDecoder, func(ctx context.Context, val1 TestContext1, val2 TestContext2, input TestInput) Responder {
         return nil // Stub implementation
     })
     
-    _ = HandlePipelineWithInput3(p3, inputDecoder, func(ctx context.Context, val1 TestContext1, val2 TestContext2, val3 TestContext3, input TestInput) Responder {
+    _ = HandlePipeline3WithInput(p3, inputDecoder, func(ctx context.Context, val1 TestContext1, val2 TestContext2, val3 TestContext3, input TestInput) Responder {
         return nil // Stub implementation
     })
     
@@ -630,7 +630,7 @@ tenantPipeline := httphandler.NewPipeline1(DecodeTenant)
 userPipeline := httphandler.NewPipeline2(DecodeTenant, DecodeUser)
 
 // Route that requires tenant and user authentication, and extracts an ID from path parameters
-router.HandleFunc("GET /items/{id}", httphandler.HandlePipelineWithInput2(
+router.HandleFunc("GET /items/{id}", httphandler.HandlePipeline2WithInput(
     userPipeline,
     httphandler.IntPathParam("id"),
     func(ctx context.Context, tenant Tenant, user User, itemID int) httphandler.Responder {
