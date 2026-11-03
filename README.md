@@ -159,6 +159,19 @@ func createUserHandler(r *http.Request, input CreateUserInput) httphandler.Respo
 router.HandleFunc("POST /users", httphandler.HandleWithInput(createUserHandler))
 ```
 
+#### Limiting the request body size
+
+By default the request body is unbounded. Use `WithMaxBodyBytes` to cap it; a larger body gets a `413` with `Request body too large`, and a body of exactly the limit is accepted.
+
+```go
+router.HandleFunc("POST /users", httphandler.HandleWithInput(
+    createUserHandler,
+    httphandler.WithMaxBodyBytes[CreateUserInput](8<<10), // 8 KiB
+))
+```
+
+A custom `WithDecodeFunc` must wrap decode errors with `%w` so the 413 can be detected.
+
 ### Additional Examples
 
 For more examples see:
