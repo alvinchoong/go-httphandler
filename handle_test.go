@@ -1,9 +1,12 @@
 package httphandler_test
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/alvinchoong/go-httphandler"
@@ -150,6 +153,112 @@ func TestHandleWithInput(t *testing.T) {
 
 			if w.Body.String() != tc.expectedBody {
 				t.Errorf("Expected body '%s', got '%s'", tc.expectedBody, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestHandleWithInput_MaxBodyBytes(t *testing.T) {
+	t.Parallel()
+
+	type req struct {
+		Pad string `json:"pad"`
+	}
+
+	const limit = 100
+
+	// bodyOfSize returns valid JSON of exactly n bytes.
+	bodyOfSize := func(n int) string {
+		const overhead = len(`{"pad":""}`)
+		return `{"pad":"` + strings.Repeat("a", n-overhead) + `"}`
+	}
+
+	customDecode := func(r *http.Request) (req, error) {
+		var v req
+		if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
+			return v, fmt.Errorf("custom decode: %w", err)
+		}
+		return v, nil
+	}
+
+	testCases := []struct {
+		desc       string
+		body       string
+		maxBytes   int64
+		custom     bool
+		wantCode   int
+		wantBody   string
+		wantCalled bool
+	}{
+		{
+			desc:       "no option, oversized body is accepted",
+			body:       bodyOfSize(limit + 1),
+			wantCode:   http.StatusOK,
+			wantBody:   "ok",
+			wantCalled: true,
+		},
+		{
+			desc:       "body of exactly the limit passes",
+			body:       bodyOfSize(limit),
+			maxBytes:   limit,
+			wantCode:   http.StatusOK,
+			wantBody:   "ok",
+			wantCalled: true,
+		},
+		{
+			desc:     "body of limit+1 gives 413",
+			body:     bodyOfSize(limit + 1),
+			maxBytes: limit,
+			wantCode: http.StatusRequestEntityTooLarge,
+			wantBody: "Request body too large\n",
+		},
+		{
+			desc:     "custom decode func wrapping with %w gives 413",
+			body:     bodyOfSize(limit + 1),
+			maxBytes: limit,
+			custom:   true,
+			wantCode: http.StatusRequestEntityTooLarge,
+			wantBody: "Request body too large\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			t.Parallel()
+
+			// Given:
+			called := false
+			handler := func(r *http.Request, in req) httphandler.Responder {
+				called = true
+				return &mockResponder{StatusCode: http.StatusOK, Body: "ok"}
+			}
+			var h http.HandlerFunc
+			switch {
+			case tc.custom:
+				h = httphandler.HandleWithInput(handler,
+					httphandler.WithDecodeFunc(customDecode),
+					httphandler.WithMaxBodyBytes[req](tc.maxBytes))
+			case tc.maxBytes > 0:
+				h = httphandler.HandleWithInput(handler, httphandler.WithMaxBodyBytes[req](tc.maxBytes))
+			default:
+				h = httphandler.HandleWithInput(handler)
+			}
+
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tc.body))
+
+			// When:
+			h.ServeHTTP(w, r)
+
+			// Then:
+			if w.Code != tc.wantCode {
+				t.Errorf("status code: want %d, got %d", tc.wantCode, w.Code)
+			}
+			if got := w.Body.String(); got != tc.wantBody {
+				t.Errorf("body: want %q, got %q", tc.wantBody, got)
+			}
+			if called != tc.wantCalled {
+				t.Errorf("handler called: want %v, got %v", tc.wantCalled, called)
 			}
 		})
 	}
