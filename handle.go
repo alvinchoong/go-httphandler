@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -62,13 +63,22 @@ func (h *handleWithInput[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	input, err := h.decodeFunc(r)
 	if err != nil {
-		var maxBytesErr *http.MaxBytesError
-		if errors.As(err, &maxBytesErr) {
-			http.Error(w, "Request body too large", http.StatusRequestEntityTooLarge)
+		if isMaxBytesError(err) {
+			writeBodyTooLarge(w)
 			return
 		}
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
+	}
+
+	// A decoder may return as soon as it has one complete value, without
+	// reading the rest of the body. Drain the remainder so the cap applies to
+	// the whole body, not just the bytes the decoder happened to read.
+	if h.maxBodyBytes > 0 {
+		if _, err := io.Copy(io.Discard, r.Body); isMaxBytesError(err) {
+			writeBodyTooLarge(w)
+			return
+		}
 	}
 
 	res := h.handler(r, input)
@@ -77,6 +87,15 @@ func (h *handleWithInput[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	res.Respond(w, r)
+}
+
+func isMaxBytesError(err error) bool {
+	var maxBytesErr *http.MaxBytesError
+	return errors.As(err, &maxBytesErr)
+}
+
+func writeBodyTooLarge(w http.ResponseWriter) {
+	http.Error(w, "Request body too large", http.StatusRequestEntityTooLarge)
 }
 
 // WithDecodeFunc sets the decode function for the handler.
