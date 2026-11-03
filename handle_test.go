@@ -213,6 +213,21 @@ func TestHandleWithInput_MaxBodyBytes(t *testing.T) {
 			wantBody: "Request body too large\n",
 		},
 		{
+			desc:     "value completes early, trailing spaces push past the limit gives 413",
+			body:     `{"pad":""}` + strings.Repeat(" ", limit+1-len(`{"pad":""}`)),
+			maxBytes: limit,
+			wantCode: http.StatusRequestEntityTooLarge,
+			wantBody: "Request body too large\n",
+		},
+		{
+			desc:       "value completes early, trailing spaces up to exactly the limit passes",
+			body:       `{"pad":""}` + strings.Repeat(" ", limit-len(`{"pad":""}`)),
+			maxBytes:   limit,
+			wantCode:   http.StatusOK,
+			wantBody:   "ok",
+			wantCalled: true,
+		},
+		{
 			desc:     "custom decode func wrapping with %w gives 413",
 			body:     bodyOfSize(limit + 1),
 			maxBytes: limit,
